@@ -1,0 +1,6 @@
+@PLPrediction_HostAddress = http://localhost:5023
+
+GET {{PLPrediction_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
