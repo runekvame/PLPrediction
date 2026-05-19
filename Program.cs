@@ -1,4 +1,5 @@
 using DotNetEnv;
+using PLPrediction.Services;
 
 Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 Console.WriteLine($"Looking for .env in: {Directory.GetCurrentDirectory()}");
@@ -19,6 +20,9 @@ var supabase = new Supabase.Client(supabaseUrl, supabaseKey);
 await supabase.InitializeAsync();
 
 builder.Services.AddSingleton(supabase);
+
+builder.Services.AddHttpClient<MatchService>();
+builder.Services.AddScoped<MatchService>();
 
 var app = builder.Build();
 
