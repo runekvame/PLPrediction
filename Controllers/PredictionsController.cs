@@ -19,7 +19,7 @@ namespace PLPrediction.Controllers
             _supabase = supabase;
             _http = httpClientFactory.CreateClient();
             _supabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL")!;
-            _supabaseKey = Environment.GetEnvironmentVariable("SUPABASE_KEY")!;
+            _supabaseKey = Environment.GetEnvironmentVariable("SUPABASE_SERVICE_KEY")!;
         }
 
         [HttpPost]
@@ -41,8 +41,8 @@ namespace PLPrediction.Controllers
 
             if (matches.GetArrayLength() == 0) return NotFound("Match not found");
 
-            var kickoff = matches[0].GetProperty("kickoff_time").GetDateTime();
-            if (DateTime.UtcNow >= kickoff) return BadRequest("Prediction deadline has passed");
+           // var kickoff = matches[0].GetProperty("kickoff_time").GetDateTime();
+            //if (DateTime.UtcNow >= kickoff) return BadRequest("Prediction deadline has passed");
 
             // Save prediction
             var body = JsonSerializer.Serialize(new
@@ -54,9 +54,13 @@ namespace PLPrediction.Controllers
             });
 
             var res = await _http.PostAsync($"{_supabaseUrl}/rest/v1/predictions",
-                new StringContent(body, Encoding.UTF8, "application/json"));
+    new StringContent(body, Encoding.UTF8, "application/json"));
 
-            if (!res.IsSuccessStatusCode) return BadRequest("Failed to save prediction");
+if (!res.IsSuccessStatusCode)
+{
+    var error = await res.Content.ReadAsStringAsync();
+    return BadRequest($"Failed to save prediction: {error}");
+}
 
             return Ok(new { message = "Prediction submitted successfully" });
         }
