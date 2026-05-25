@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text;
 using PLPrediction.Models;
 
 namespace PLPrediction.Services
@@ -26,6 +27,8 @@ namespace PLPrediction.Services
             var doc = JsonDocument.Parse(json);
 
             var matches = new List<Match>();
+            var supabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL")!;
+            var supabaseKey = Environment.GetEnvironmentVariable("SUPABASE_SERVICE_KEY")!;
 
             foreach (var match in doc.RootElement.GetProperty("matches").EnumerateArray())
             {
@@ -48,6 +51,31 @@ namespace PLPrediction.Services
 
                 matches.Add(m);
 
+                // Save to Supabase
+                var body = JsonSerializer.Serialize(new
+                {
+                    external_id = m.ExternalId,
+                    home_team = m.HomeTeam,
+                    away_team = m.AwayTeam,
+                    gameweek = m.Gameweek,
+                    kickoff_time = m.KickoffTime,
+                    status = m.Status,
+                    home_score = m.HomeScore,
+                    away_score = m.AwayScore,
+                    fetched_at = m.FetchedAt
+                });
+
+                _http.DefaultRequestHeaders.Clear();
+                _http.DefaultRequestHeaders.Add("apikey", supabaseKey);
+                _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {supabaseKey}");
+                _http.DefaultRequestHeaders.Add("Prefer", "resolution=merge-duplicates");
+
+                await _http.PostAsync($"{supabaseUrl}/rest/v1/matches",
+                    new StringContent(body, Encoding.UTF8, "application/json"));
+
+                // Reset headers for next football API call
+                _http.DefaultRequestHeaders.Clear();
+                _http.DefaultRequestHeaders.Add("X-Auth-Token", _apiKey);
             }
 
             return matches;

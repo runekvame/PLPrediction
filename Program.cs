@@ -23,6 +23,7 @@ builder.Services.AddSingleton(supabase);
 
 builder.Services.AddHttpClient<MatchService>();
 builder.Services.AddScoped<MatchService>();
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

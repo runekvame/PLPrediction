@@ -1,0 +1,77 @@
+using Microsoft.AspNetCore.Mvc;
+using PLPrediction.DTOs;
+using System.Text.Json;
+using System.Text;
+
+namespace PLPrediction.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class PredictionsController : ControllerBase
+    {
+        private readonly Supabase.Client _supabase;
+        private readonly HttpClient _http;
+        private readonly string _supabaseUrl;
+        private readonly string _supabaseKey;
+
+        public PredictionsController(Supabase.Client supabase, IHttpClientFactory httpClientFactory)
+        {
+            _supabase = supabase;
+            _http = httpClientFactory.CreateClient();
+            _supabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL")!;
+            _supabaseKey = Environment.GetEnvironmentVariable("SUPABASE_KEY")!;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitPrediction(SubmitPredictionDTO dto, [FromHeader] string authorization)
+        {
+            // Get user from token
+            var token = authorization.Replace("Bearer ", "");
+            var user = await _supabase.Auth.GetUser(token);
+            if (user == null) return Unauthorized("Invalid token");
+
+            // Check match kickoff time
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var matchRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/matches?id=eq.{dto.MatchId}&select=kickoff_time,status");
+            var matchJson = await matchRes.Content.ReadAsStringAsync();
+            var matches = JsonDocument.Parse(matchJson).RootElement;
+
+            if (matches.GetArrayLength() == 0) return NotFound("Match not found");
+
+            var kickoff = matches[0].GetProperty("kickoff_time").GetDateTime();
+            if (DateTime.UtcNow >= kickoff) return BadRequest("Prediction deadline has passed");
+
+            // Save prediction
+            var body = JsonSerializer.Serialize(new
+            {
+                user_id = user.Id,
+                match_id = dto.MatchId,
+                predicted_home = dto.PredictedHome,
+                predicted_away = dto.PredictedAway
+            });
+
+            var res = await _http.PostAsync($"{_supabaseUrl}/rest/v1/predictions",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+
+            if (!res.IsSuccessStatusCode) return BadRequest("Failed to save prediction");
+
+            return Ok(new { message = "Prediction submitted successfully" });
+        }
+
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserPredictions(string userId)
+        {
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var res = await _http.GetAsync($"{_supabaseUrl}/rest/v1/predictions?user_id=eq.{userId}&select=*");
+            var json = await res.Content.ReadAsStringAsync();
+
+            return Ok(JsonDocument.Parse(json).RootElement);
+        }
+    }
+}
