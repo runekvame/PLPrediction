@@ -25,6 +25,9 @@ builder.Services.AddHttpClient<MatchService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddHttpClient();
 
+builder.Services.AddHttpClient<ScoringService>();
+builder.Services.AddScoped<ScoringService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
