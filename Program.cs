@@ -28,6 +28,9 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<ScoringService>();
 builder.Services.AddScoped<ScoringService>();
 
+builder.Services.AddHttpClient<SeasonScoringService>();
+builder.Services.AddScoped<SeasonScoringService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
