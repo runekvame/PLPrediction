@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLPrediction - Hjem</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <a href="home.html" class="logo">PLPrediction</a>
+        <ul>
+            <li><a href="home.html" class="active">Hjem</a></li>
+            <li><a href="predictions.html">Tippinger</a></li>
+            <li><a href="leaderboard.html">Tabell</a></li>
+        </ul>
+        <div class="nav-right">
+            <span class="nav-username" id="nav-username"></span>
+            <button class="secondary" onclick="logout()">Logg ut</button>
+        </div>
+    </nav>
+
+    <main>
+        <div class="page-header">
+            <h1>Hjem</h1>
+            <p>Oversikt over kommende kamper og resultater</p>
+        </div>
+
+        <div class="grid-2">
+            <div>
+                <div class="card">
+                    <h2>Kommende kamper</h2>
+                    <div id="upcoming-matches">Laster...</div>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <h2>Siste resultater</h2>
+                    <div id="recent-matches">Laster...</div>
+                </div>
+                <div class="card" style="margin-top:1rem">
+                    <h2>Ledertabell</h2>
+                    <div id="mini-leaderboard">Laster...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/home.js"></script>
+</body>
+</html>

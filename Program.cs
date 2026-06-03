@@ -31,6 +31,16 @@ builder.Services.AddScoped<ScoringService>();
 builder.Services.AddHttpClient<SeasonScoringService>();
 builder.Services.AddScoped<SeasonScoringService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -39,7 +49,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseCors();
+
+//app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
