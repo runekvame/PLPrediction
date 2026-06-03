@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLPrediction - Tabell</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <a href="home.html" class="logo">PLPrediction</a>
+        <ul>
+            <li><a href="home.html">Hjem</a></li>
+            <li><a href="predictions.html">Tippinger</a></li>
+            <li><a href="leaderboard.html" class="active">Tabell</a></li>
+        </ul>
+        <div class="nav-right">
+            <span class="nav-username" id="nav-username"></span>
+            <button class="secondary" onclick="logout()">Logg ut</button>
+        </div>
+    </nav>
+
+    <main>
+        <div class="page-header">
+            <h1>Tabell</h1>
+            <p>Sesongens poengtabell</p>
+        </div>
+
+        <div class="card">
+            <h2>Totalt denne sesongen</h2>
+            <table class="leaderboard-table" style="margin-top:0.5rem">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Spiller</th>
+                        <th style="text-align:right">Poeng</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr><td colspan="3" style="color:var(--text-muted)">Laster...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card" style="margin-top:1.5rem">
+            <h2>Spillerunde</h2>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem" id="gw-buttons"></div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Spiller</th>
+                        <th style="text-align:right">Poeng</th>
+                    </tr>
+                </thead>
+                <tbody id="gw-leaderboard-body">
+                    <tr><td colspan="3" style="color:var(--text-muted)">Velg en spillerunde</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/leaderboard.js"></script>
+</body>
+</html>
