@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLPrediction - Admin</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <nav>
+      <a href="home.html" class="logo">PLPrediction</a>
+      <ul>
+        <li><a href="home.html">Hjem</a></li>
+        <li><a href="predictions.html">Tippinger</a></li>
+        <li><a href="leaderboard.html">Tabell</a></li>
+        <li><a href="admin.html" class="active">Admin</a></li>
+      </ul>
+      <div class="nav-right">
+        <button class="secondary" onclick="logout()">Logg ut</button>
+      </div>
+    </nav>
+
+    <main>
+      <div class="page-header">
+        <h1>Admin</h1>
+        <p>Administrer sesongen</p>
+      </div>
+
+      <div id="alert" class="alert" style="display: none"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h2>Synkroniser kamper</h2>
+          <p
+            style="
+              color: var(--text-muted);
+              font-size: 0.9rem;
+              margin-bottom: 1rem;
+            "
+          >
+            Henter alle kamper fra football-data.org og lagrer i databasen.
+          </p>
+          <button onclick="syncMatches()">Synkroniser kamper</button>
+        </div>
+
+        <div class="card">
+          <h2>Poengsum spillerunde</h2>
+          <p
+            style="
+              color: var(--text-muted);
+              font-size: 0.9rem;
+              margin-bottom: 1rem;
+            "
+          >
+            Beregn poeng for alle tippinger i en spillerunde.
+          </p>
+          <div style="display: flex; gap: 0.5rem">
+            <input
+              type="number"
+              id="score-gameweek"
+              placeholder="Runde nr."
+              style="
+                width: 120px;
+                background: var(--bg-input);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 0.6rem;
+                color: var(--text);
+              "
+            />
+            <button onclick="scoreGameweek()">Beregn poeng</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Sesongtipping poeng</h2>
+          <p
+            style="
+              color: var(--text-muted);
+              font-size: 0.9rem;
+              margin-bottom: 1rem;
+            "
+          >
+            Beregn poeng for sesongtippingen ved sesongavslutning. Lim inn
+            endelig tabell (ett lag per linje).
+          </p>
+          <textarea
+            id="final-standings"
+            placeholder="Arsenal FC&#10;Liverpool FC&#10;Manchester City FC&#10;..."
+            style="
+              width: 100%;
+              height: 200px;
+              background: var(--bg-input);
+              border: 1px solid var(--border);
+              border-radius: 8px;
+              padding: 0.8rem;
+              color: var(--text);
+              font-size: 0.9rem;
+              resize: vertical;
+              margin-bottom: 0.8rem;
+            "
+          ></textarea>
+          <button onclick="scoreSeasonPredictions()">
+            Beregn sesongtipping
+          </button>
+        </div>
+
+        <div class="card">
+          <h2>Brukere</h2>
+          <p
+            style="
+              color: var(--text-muted);
+              font-size: 0.9rem;
+              margin-bottom: 1rem;
+            "
+          >
+            Oversikt over alle registrerte brukere.
+          </p>
+          <div id="users-list">Laster...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Auto-sync status</h2>
+        <p
+          style="
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+          "
+        >
+          Systemet synkroniserer kamper og beregner poeng automatisk hver 6.
+          time. Du kan også trigge dette manuelt over.
+        </p>
+        <div style="display: flex; align-items: center; gap: 0.5rem">
+          <div
+            style="
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              background: var(--accent);
+            "
+          ></div>
+          <span style="color: var(--text-muted); font-size: 0.9rem"
+            >Auto-sync aktiv</span
+          >
+        </div>
+      </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>
