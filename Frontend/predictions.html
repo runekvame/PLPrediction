@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLPrediction - Tippinger</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav>
+        <a href="home.html" class="logo">PLPrediction</a>
+        <ul>
+            <li><a href="home.html">Hjem</a></li>
+            <li><a href="predictions.html" class="active">Tippinger</a></li>
+            <li><a href="leaderboard.html">Tabell</a></li>
+        </ul>
+        <div class="nav-right">
+            <span class="nav-username" id="nav-username"></span>
+            <button class="secondary" onclick="logout()">Logg ut</button>
+        </div>
+    </nav>
+
+    <main>
+        <div class="page-header">
+            <h1>Tippinger</h1>
+            <p>Tipp kampene før avspark</p>
+        </div>
+
+        <div class="card" style="margin-bottom:1.5rem">
+            <h2>Filtrer etter spillerunde</h2>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem" id="gameweek-buttons"></div>
+        </div>
+
+        <div id="matches-container">Laster...</div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/predictions.js"></script>
+</body>
+</html>
