@@ -106,19 +106,32 @@
         </div>
 
         <div class="card">
-          <h2>Brukere</h2>
-          <p
-            style="
-              color: var(--text-muted);
-              font-size: 0.9rem;
-              margin-bottom: 1rem;
-            "
-          >
-            Oversikt over alle registrerte brukere.
-          </p>
-          <div id="users-list">Laster...</div>
-        </div>
-      </div>
+    <h2>Opprett bruker</h2>
+    <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem">
+        Legg til en ny bruker i systemet.
+    </p>
+    <div class="form-group">
+        <label>Brukernavn</label>
+        <input type="text" id="new-username" placeholder="brukernavn">
+    </div>
+    <div class="form-group">
+        <label>E-post</label>
+        <input type="email" id="new-email" placeholder="epost@mail.no">
+    </div>
+    <div class="form-group">
+        <label>Passord</label>
+        <input type="password" id="new-password" placeholder="••••••••">
+    </div>
+    <button onclick="handleCreateUser()">Opprett bruker</button>
+</div>
+
+<div class="card">
+    <h2>Brukere</h2>
+    <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem">
+        Oversikt over alle registrerte brukere.
+    </p>
+    <div id="users-list">Laster...</div>
+</div>
 
       <div class="card">
         <h2>Auto-sync status</h2>

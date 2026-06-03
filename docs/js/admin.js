@@ -1,5 +1,16 @@
-if (!localStorage.getItem("token")) {
-  window.location.href = "index.html";
+// Check if admin
+async function checkAdmin() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const admin = await isAdmin();
+  if (!admin) {
+    window.location.href = "home.html";
+    return;
+  }
 }
 
 function logout() {
@@ -63,13 +74,52 @@ async function scoreSeasonPredictions() {
   showAlert(data.message || "Sesongtipping beregnet!", "success");
 }
 
+async function handleCreateUser() {
+  const username = document.getElementById("new-username").value;
+  const email = document.getElementById("new-email").value;
+  const password = document.getElementById("new-password").value;
+
+  if (!username || !email || !password) {
+    showAlert("Fyll inn alle feltene", "error");
+    return;
+  }
+
+  if (password.length < 6) {
+    showAlert("Passordet må være minst 6 tegn", "error");
+    return;
+  }
+
+  const result = await createUser(email, password, username);
+  if (result.message) {
+    showAlert(result.message, "success");
+    document.getElementById("new-username").value = "";
+    document.getElementById("new-email").value = "";
+    document.getElementById("new-password").value = "";
+    await loadUsers();
+  } else {
+    showAlert("Kunne ikke opprette bruker", "error");
+  }
+}
+
+async function handleDeleteUser(userId, username) {
+  if (!confirm(`Er du sikker på at du vil slette ${username}?`)) return;
+
+  const result = await deleteUser(userId);
+  if (result.message) {
+    showAlert(`${username} er slettet`, "success");
+    await loadUsers();
+  } else {
+    showAlert("Kunne ikke slette bruker", "error");
+  }
+}
+
 async function loadUsers() {
-  const supabaseUrl = "https://plprediction.onrender.com";
+  const supabaseUrl = "https://fvzccuhpckmoaurhxfzy.supabase.co";
   const supabaseKey =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2emNjdWhwY2ttb2F1cmh4Znp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTQ0MDgsImV4cCI6MjA5NDYzMDQwOH0.lUV1tXVGoh8vRN0QziUPycqN_rSet-HNRr-YkeNVPKQ";
 
   const res = await fetch(
-    `${supabaseUrl}/rest/v1/users?select=username,total_points,created_at&order=total_points.desc`,
+    `${supabaseUrl}/rest/v1/users?select=id,username,total_points,is_admin&order=total_points.desc`,
     {
       headers: {
         apikey: supabaseKey,
@@ -82,13 +132,24 @@ async function loadUsers() {
   document.getElementById("users-list").innerHTML = users
     .map(
       (u) => `
-        <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--border)">
-            <span>${u.username}</span>
-            <span style="color:var(--accent);font-weight:700">${u.total_points} p</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0;border-bottom:1px solid var(--border)">
+            <div>
+                <span style="font-weight:600">${u.username}</span>
+                ${u.is_admin ? '<span class="badge" style="background:rgba(74,222,128,0.15);color:var(--accent);margin-left:0.5rem">Admin</span>' : ""}
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+                <span style="color:var(--accent);font-weight:700">${u.total_points} p</span>
+                ${!u.is_admin ? `<button class="danger" onclick="handleDeleteUser('${u.id}', '${u.username}')" style="padding:0.3rem 0.7rem;font-size:0.8rem">Slett</button>` : ""}
+            </div>
         </div>
     `,
     )
     .join("");
 }
 
-loadUsers();
+async function loadPage() {
+  await checkAdmin();
+  await loadUsers();
+}
+
+loadPage();

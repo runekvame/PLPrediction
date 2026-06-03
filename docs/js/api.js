@@ -90,3 +90,29 @@ async function getMatchesFromDB() {
   );
   return res.json();
 }
+
+async function isAdmin() {
+  const res = await fetch(`${API_URL}/AdminAuth/isadmin`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.isAdmin;
+}
+
+async function createUser(email, password, username) {
+  const res = await fetch(`${API_URL}/AdminAuth/createuser`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ email, password, username }),
+  });
+  return res.json();
+}
+
+async function deleteUser(userId) {
+  const res = await fetch(`${API_URL}/AdminAuth/deleteuser/${userId}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  return res.json();
+}
