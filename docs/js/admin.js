@@ -110,7 +110,7 @@ async function handleCreateUser() {
     document.getElementById("new-password").value = "";
     await loadUsers();
   } else {
-    showAlert(JSON.stringify(result), "error");
+    showAlert("Kunne ikke opprette bruker", "error");
   }
 }
 
