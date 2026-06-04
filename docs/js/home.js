@@ -107,6 +107,49 @@ async function loadPage() {
   }
 }
 
+function renderPodium(players) {
+  const podium = document.getElementById("podium");
+  if (!players || players.length === 0) {
+    podium.innerHTML =
+      '<p style="color:var(--text-muted);padding:1rem">Ingen spillere ennå</p>';
+    return;
+  }
+
+  const top3 = players.slice(0, 3);
+  const first = top3[0];
+  const second = top3[1];
+  const third = top3[2];
+
+  function placeHTML(player, rank) {
+    if (!player) {
+      const medals = { 1: "🥇", 2: "🥈", 3: "🥉" };
+      const classes = { 1: "first", 2: "second", 3: "third" };
+      return `
+                <div class="podium-place ${classes[rank]} podium-empty">
+                    <div class="podium-avatar">${medals[rank]}</div>
+                    <div class="podium-name">-</div>
+                    <div class="podium-points">0 p</div>
+                    <div class="podium-block">${rank}</div>
+                </div>`;
+    }
+
+    const medals = { 1: "🥇", 2: "🥈", 3: "🥉" };
+    const classes = { 1: "first", 2: "second", 3: "third" };
+    const initial = (player.username || "?")[0].toUpperCase();
+
+    return `
+            <div class="podium-place ${classes[rank]}">
+                <div class="podium-avatar">${initial}</div>
+                <div class="podium-name">${player.username || "Ukjent"}</div>
+                <div class="podium-points">${player.total_points ?? 0} p</div>
+                <div class="podium-block">${medals[rank]}</div>
+            </div>`;
+  }
+
+  podium.innerHTML =
+    placeHTML(second, 2) + placeHTML(first, 1) + placeHTML(third, 3);
+}
+
 async function loadPage() {
   const matches = await getMatchesFromDB();
   document.getElementById("upcoming-matches").innerHTML =
@@ -115,11 +158,13 @@ async function loadPage() {
     renderRecentMatches(matches);
 
   const leaderboard = await getLeaderboard();
+  renderPodium(leaderboard);
   document.getElementById("mini-leaderboard").innerHTML =
     renderMiniLeaderboard(leaderboard);
 
   // Show double points banner if current gameweek is double
   const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
+  const TRIPLE_POINTS_GAMEWEEKS = [38];
   const now = new Date();
   const upcoming = matches.filter((m) => new Date(m.kickoff_time) > now);
   const currentGameweek =
@@ -127,7 +172,21 @@ async function loadPage() {
       ? upcoming[0].gameweek
       : Math.max(...matches.map((m) => m.gameweek));
 
-  if (DOUBLE_POINTS_GAMEWEEKS.includes(currentGameweek)) {
+  if (TRIPLE_POINTS_GAMEWEEKS.includes(currentGameweek)) {
+    const header = document.querySelector(".page-header");
+    header.insertAdjacentHTML(
+      "afterend",
+      `
+            <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.8rem">
+                <span style="font-size:1.5rem">⚡</span>
+                <div>
+                    <div style="font-weight:700;color:#a855f7">Trippel poeng runde ${currentGameweek}!</div>
+                    <div style="color:var(--text-muted);font-size:0.85rem">Denne spillerunden gir tre ganger så mange poeng</div>
+                </div>
+            </div>
+        `,
+    );
+  } else if (DOUBLE_POINTS_GAMEWEEKS.includes(currentGameweek)) {
     const header = document.querySelector(".page-header");
     header.insertAdjacentHTML(
       "afterend",
