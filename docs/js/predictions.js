@@ -277,3 +277,11 @@ async function loadPage() {
 }
 
 loadPage();
+
+window.switchTab = switchTab;
+window.savePrediction = savePrediction;
+window.selectGameweek = selectGameweek;
+window.saveSeasonPrediction = saveSeasonPrediction;
+window.dragStart = dragStart;
+window.dragOver = dragOver;
+window.drop = drop;
