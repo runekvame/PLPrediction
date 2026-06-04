@@ -74,6 +74,8 @@ function getUserPrediction(matchId) {
   return userPredictions.find((p) => p.match_id === matchId);
 }
 
+const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
+
 function renderGameweekButtons(matches) {
   const gameweeks = [...new Set(matches.map((m) => m.gameweek))].sort(
     (a, b) => a - b,
@@ -85,8 +87,9 @@ function renderGameweekButtons(matches) {
         <button 
             class="${gw === currentGameweek ? "" : "secondary"}" 
             onclick="selectGameweek(${gw})"
-            style="padding:0.4rem 0.8rem;font-size:0.85rem">
+            style="padding:0.4rem 0.8rem;font-size:0.85rem;position:relative">
             Runde ${gw}
+            ${DOUBLE_POINTS_GAMEWEEKS.includes(gw) ? '<span style="position:absolute;top:-6px;right:-6px;background:var(--danger);color:white;border-radius:50%;width:16px;height:16px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700">2x</span>' : ""}
         </button>
     `,
     )
@@ -103,13 +106,25 @@ function renderMatches(matches) {
     return;
   }
 
-  container.innerHTML = filtered
-    .map((m) => {
-      const prediction = getUserPrediction(m.id);
-      const isFinished = m.status === "FINISHED";
-      const isPast = new Date(m.kickoff_time) < new Date();
+  const doubleBanner = DOUBLE_POINTS_GAMEWEEKS.includes(currentGameweek)
+    ? `<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.8rem">
+            <span style="font-size:1.5rem">🔥</span>
+            <div>
+                <div style="font-weight:700;color:var(--danger)">Dobbel poeng runde!</div>
+                <div style="color:var(--text-muted);font-size:0.85rem">Alle tippinger denne runden gir dobbelt så mange poeng</div>
+            </div>
+           </div>`
+    : "";
 
-      return `
+  container.innerHTML =
+    doubleBanner +
+    filtered
+      .map((m) => {
+        const prediction = getUserPrediction(m.id);
+        const isFinished = m.status === "FINISHED";
+        const isPast = new Date(m.kickoff_time) < new Date();
+
+        return `
         <div class="match-card" style="flex-direction:column;align-items:stretch;gap:0.8rem">
             <div style="display:flex;align-items:center;justify-content:space-between">
                 <div class="match-teams" style="flex:1">
@@ -155,8 +170,8 @@ function renderMatches(matches) {
             </div>
         </div>
         `;
-    })
-    .join("");
+      })
+      .join("");
 }
 
 async function savePrediction(matchId) {

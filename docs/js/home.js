@@ -107,4 +107,44 @@ async function loadPage() {
   }
 }
 
-loadPage();
+async function loadPage() {
+  const matches = await getMatchesFromDB();
+  document.getElementById("upcoming-matches").innerHTML =
+    renderUpcomingMatches(matches);
+  document.getElementById("recent-matches").innerHTML =
+    renderRecentMatches(matches);
+
+  const leaderboard = await getLeaderboard();
+  document.getElementById("mini-leaderboard").innerHTML =
+    renderMiniLeaderboard(leaderboard);
+
+  // Show double points banner if current gameweek is double
+  const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
+  const now = new Date();
+  const upcoming = matches.filter((m) => new Date(m.kickoff_time) > now);
+  const currentGameweek =
+    upcoming.length > 0
+      ? upcoming[0].gameweek
+      : Math.max(...matches.map((m) => m.gameweek));
+
+  if (DOUBLE_POINTS_GAMEWEEKS.includes(currentGameweek)) {
+    const header = document.querySelector(".page-header");
+    header.insertAdjacentHTML(
+      "afterend",
+      `
+            <div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.8rem">
+                <span style="font-size:1.5rem">🔥</span>
+                <div>
+                    <div style="font-weight:700;color:var(--danger)">Dobbel poeng runde ${currentGameweek}!</div>
+                    <div style="color:var(--text-muted);font-size:0.85rem">Denne spillerunden gir dobbelt så mange poeng</div>
+                </div>
+            </div>
+        `,
+    );
+  }
+
+  const adminStatus = await isAdmin();
+  if (adminStatus) {
+    document.getElementById("admin-link").style.display = "block";
+  }
+}
