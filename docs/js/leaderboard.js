@@ -52,19 +52,29 @@ async function loadPage() {
     (a, b) => a - b,
   );
 
+  const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
+  const TRIPLE_POINTS_GAMEWEEKS = [38];
+
   const gwButtons = document.getElementById("gw-buttons");
   gwButtons.innerHTML = gameweeks
-    .map(
-      (gw) => `
-        <button 
-            class="secondary" 
-            data-gw="${gw}"
-            onclick="loadGameweekLeaderboard(${gw})"
-            style="padding:0.4rem 0.8rem;font-size:0.85rem">
-            Runde ${gw}
-        </button>
-    `,
-    )
+    .map((gw) => {
+      const isDouble = DOUBLE_POINTS_GAMEWEEKS.includes(gw);
+      const isTriple = TRIPLE_POINTS_GAMEWEEKS.includes(gw);
+      const badgeColor = isTriple ? "#a855f7" : "#f87171";
+      const badgeText = isTriple ? "3x" : "2x";
+      return `
+      <div style="position:relative;display:inline-block">
+          <button 
+              class="secondary" 
+              data-gw="${gw}"
+              onclick="loadGameweekLeaderboard(${gw})"
+              style="padding:0.4rem 0.8rem;font-size:0.85rem">
+              Runde ${gw}
+          </button>
+          ${isDouble || isTriple ? `<span style="position:absolute;top:-8px;right:-8px;background:${badgeColor};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${badgeText}</span>` : ""}
+      </div>
+    `;
+    })
     .join("");
 
   // Show admin link if admin
@@ -73,5 +83,4 @@ async function loadPage() {
     document.getElementById("admin-link").style.display = "block";
   }
 }
-
 loadPage();
