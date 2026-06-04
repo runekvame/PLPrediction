@@ -28,9 +28,15 @@ function showAlert(message, type = "success") {
 }
 
 async function syncMatches() {
-  showAlert("Synkroniserer kamper...", "success");
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Synkroniserer...';
+
   const res = await fetch(`${API_URL}/Matches/sync`);
   const data = await res.json();
+
+  btn.disabled = false;
+  btn.innerHTML = "Synkroniser kamper";
   showAlert(data.message || "Kamper synkronisert!", "success");
 }
 
@@ -41,12 +47,19 @@ async function scoreGameweek() {
     return;
   }
 
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Beregner...';
+
   const res = await fetch(`${API_URL}/Scoring/gameweek/${gw}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: "",
   });
   const data = await res.json();
+
+  btn.disabled = false;
+  btn.innerHTML = "Beregn poeng";
   showAlert(data.message || "Poeng beregnet!", "success");
 }
 

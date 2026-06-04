@@ -55,11 +55,15 @@ namespace PLPrediction.Services
                     // Calculate points
                     int points = 0;
                     bool correctResult = (predHome > predAway && homeScore > awayScore) ||
-                                         (predHome < predAway && homeScore < awayScore) ||
-                                         (predHome == predAway && homeScore == awayScore);
+                     (predHome < predAway && homeScore < awayScore) ||
+                     (predHome == predAway && homeScore == awayScore);
 
-                    if (correctResult) points += 2;
-                    if (predHome == homeScore && predAway == awayScore) points += 3;
+if (correctResult) points += 2;
+if (predHome == homeScore && predAway == awayScore) points += 3;
+
+// Double points gameweeks
+int[] doublePointsGameweeks = { 1, 19 };
+if (doublePointsGameweeks.Contains(gameweek)) points *= 2;
 
                     SetHeaders();
 

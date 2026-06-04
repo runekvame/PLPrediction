@@ -160,6 +160,14 @@ function renderMatches(matches) {
 }
 
 async function savePrediction(matchId) {
+  const btn = document.querySelector(
+    `button[onclick="savePrediction('${matchId}')"]`,
+  );
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+  }
+
   const home = parseInt(document.getElementById(`home-${matchId}`).value);
   const away = parseInt(document.getElementById(`away-${matchId}`).value);
 
@@ -169,6 +177,10 @@ async function savePrediction(matchId) {
     await loadPredictions();
     renderMatches(allMatches);
   } else {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = "Tipp";
+    }
     alert("Kunne ikke lagre tipping. Prøv igjen.");
   }
 }
@@ -185,43 +197,72 @@ async function loadPredictions() {
 }
 
 // Season prediction
+let dragSrcIndex = null;
+
 function renderSeasonStandings(teams) {
   const list = document.getElementById("season-standings-list");
   list.innerHTML = teams
     .map(
       (team, i) => `
-        <div id="team-${i}" draggable="true" 
+        <div id="team-${i}" draggable="true"
             ondragstart="dragStart(event, ${i})"
-            ondragover="dragOver(event)"
+            ondragover="dragOver(event, ${i})"
+            ondragleave="dragLeave(event)"
             ondrop="drop(event, ${i})"
-            style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:grab">
-            <span style="color:var(--text-muted);font-weight:700;min-width:24px">${i + 1}</span>
-            <span style="flex:1">${team}</span>
-            <span style="color:var(--text-muted);font-size:0.8rem">☰</span>
+            ondragend="dragEnd(event)"
+            style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:grab;transition:all 0.15s ease">
+            <span style="color:var(--accent);font-weight:700;min-width:24px">${i + 1}</span>
+            <span style="flex:1;font-weight:500">${team}</span>
+            <span style="color:var(--text-muted);font-size:1rem">⠿</span>
         </div>
     `,
     )
     .join("");
 }
 
-let dragSrcIndex = null;
-
 function dragStart(event, index) {
   dragSrcIndex = index;
   event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", index);
+  setTimeout(() => {
+    document.getElementById(`team-${index}`).style.opacity = "0.4";
+  }, 0);
 }
 
-function dragOver(event) {
+function dragOver(event, index) {
   event.preventDefault();
   event.dataTransfer.dropEffect = "move";
+  document.querySelectorAll('[id^="team-"]').forEach((el) => {
+    el.style.borderColor = "var(--border)";
+    el.style.transform = "scale(1)";
+  });
+  const target = document.getElementById(`team-${index}`);
+  if (target && dragSrcIndex !== index) {
+    target.style.borderColor = "var(--accent)";
+    target.style.transform = "scale(1.02)";
+  }
+}
+
+function dragLeave(event) {
+  event.target.closest("[draggable]").style.borderColor = "var(--border)";
+  event.target.closest("[draggable]").style.transform = "scale(1)";
+}
+
+function dragEnd(event) {
+  document.querySelectorAll('[id^="team-"]').forEach((el) => {
+    el.style.opacity = "1";
+    el.style.borderColor = "var(--border)";
+    el.style.transform = "scale(1)";
+  });
 }
 
 function drop(event, index) {
   event.preventDefault();
-  if (dragSrcIndex === index) return;
+  if (dragSrcIndex === null || dragSrcIndex === index) return;
 
   const moved = seasonTeams.splice(dragSrcIndex, 1)[0];
   seasonTeams.splice(index, 0, moved);
+  dragSrcIndex = null;
   renderSeasonStandings(seasonTeams);
 }
 
@@ -247,7 +288,15 @@ async function loadSeasonPrediction() {
 }
 
 async function saveSeasonPrediction() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Lagrer...';
+
   const result = await submitSeasonPrediction("2026-27", seasonTeams);
+
+  btn.disabled = false;
+  btn.innerHTML = "Lagre tipping";
+
   if (result.message) {
     alert("Sesongtipping lagret!");
   } else {
@@ -284,4 +333,6 @@ window.selectGameweek = selectGameweek;
 window.saveSeasonPrediction = saveSeasonPrediction;
 window.dragStart = dragStart;
 window.dragOver = dragOver;
+window.dragLeave = dragLeave;
+window.dragEnd = dragEnd;
 window.drop = drop;
