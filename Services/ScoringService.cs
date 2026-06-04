@@ -61,30 +61,32 @@ namespace PLPrediction.Services
 if (correctResult) points += 2;
 if (predHome == homeScore && predAway == awayScore) points += 3;
 
-// Double points gameweeks
+// Double and triple points gameweeks
 int[] doublePointsGameweeks = { 1, 19 };
-if (doublePointsGameweeks.Contains(gameweek)) points *= 2;
+int[] triplePointsGameweeks = { 38 };
 
+if (triplePointsGameweeks.Contains(gameweek)) points *= 3;
+else if (doublePointsGameweeks.Contains(gameweek)) points *= 2;
                     SetHeaders();
 
-                    // Update prediction with points
-                    var updateBody = JsonSerializer.Serialize(new { points_awarded = points });
-                    await _http.PatchAsync($"{_supabaseUrl}/rest/v1/predictions?id=eq.{predId}",
-                        new StringContent(updateBody, Encoding.UTF8, "application/json"));
+// Update prediction with points
+ var updateBody = JsonSerializer.Serialize(new { points_awarded = points });
+ await _http.PatchAsync($"{_supabaseUrl}/rest/v1/predictions?id=eq.{predId}",
+    new StringContent(updateBody, Encoding.UTF8, "application/json"));
 
-                    // Update user total points
-                    SetHeaders();
-                    var userRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/users?id=eq.{userId}&select=total_points");
-                    var userJson = await userRes.Content.ReadAsStringAsync();
-                    var users = JsonDocument.Parse(userJson).RootElement;
-                    var currentPoints = users[0].GetProperty("total_points").GetInt32();
+// Update user total points
+ SetHeaders();
+var userRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/users?id=eq.{userId}&select=total_points");
+var userJson = await userRes.Content.ReadAsStringAsync();
+var users = JsonDocument.Parse(userJson).RootElement;
+var currentPoints = users[0].GetProperty("total_points").GetInt32();
 
-                    SetHeaders();
-                    var pointsBody = JsonSerializer.Serialize(new { total_points = currentPoints + points });
-                    await _http.PatchAsync($"{_supabaseUrl}/rest/v1/users?id=eq.{userId}",
-                        new StringContent(pointsBody, Encoding.UTF8, "application/json"));
-                }
-            }
-        }
-    }
+SetHeaders();
+var pointsBody = JsonSerializer.Serialize(new { total_points = currentPoints + points });
+await _http.PatchAsync($"{_supabaseUrl}/rest/v1/users?id=eq.{userId}",
+    new StringContent(pointsBody, Encoding.UTF8, "application/json"));
+}
+}
+}
+}
 }

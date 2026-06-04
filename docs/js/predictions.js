@@ -75,6 +75,7 @@ function getUserPrediction(matchId) {
 }
 
 const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
+const TRIPLE_POINTS_GAMEWEEKS = [38];
 
 function renderGameweekButtons(matches) {
   const gameweeks = [...new Set(matches.map((m) => m.gameweek))].sort(
@@ -84,7 +85,10 @@ function renderGameweekButtons(matches) {
   container.innerHTML = gameweeks
     .map((gw) => {
       const isDouble = DOUBLE_POINTS_GAMEWEEKS.includes(gw);
+      const isTriple = TRIPLE_POINTS_GAMEWEEKS.includes(gw);
       const isCurrent = gw === currentGameweek;
+      const badgeColor = isTriple ? "#a855f7" : "#f87171";
+      const badgeText = isTriple ? "3x" : "2x";
       return `
             <div style="position:relative;display:inline-block">
                 <button 
@@ -93,7 +97,7 @@ function renderGameweekButtons(matches) {
                     style="padding:0.4rem 0.8rem;font-size:0.85rem">
                     Runde ${gw}
                 </button>
-                ${isDouble ? '<span style="position:absolute;top:-8px;right:-8px;background:#f87171;color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">2x</span>' : ""}
+                ${isDouble || isTriple ? `<span style="position:absolute;top:-8px;right:-8px;background:${badgeColor};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${badgeText}</span>` : ""}
             </div>
         `;
     })
@@ -110,15 +114,23 @@ function renderMatches(matches) {
     return;
   }
 
-  const doubleBanner = DOUBLE_POINTS_GAMEWEEKS.includes(currentGameweek)
-    ? `<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.8rem">
-            <span style="font-size:1.5rem">🔥</span>
-            <div>
-                <div style="font-weight:700;color:var(--danger)">Dobbel poeng runde!</div>
-                <div style="color:var(--text-muted);font-size:0.85rem">Alle tippinger denne runden gir dobbelt så mange poeng</div>
-            </div>
-           </div>`
-    : "";
+  const doubleBanner = TRIPLE_POINTS_GAMEWEEKS.includes(currentGameweek)
+    ? `<div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.8rem">
+        <span style="font-size:1.5rem">⚡</span>
+        <div>
+            <div style="font-weight:700;color:#a855f7">Trippel poeng runde!</div>
+            <div style="color:var(--text-muted);font-size:0.85rem">Alle tippinger denne runden gir tre ganger så mange poeng</div>
+        </div>
+       </div>`
+    : DOUBLE_POINTS_GAMEWEEKS.includes(currentGameweek)
+      ? `<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.8rem">
+        <span style="font-size:1.5rem">🔥</span>
+        <div>
+            <div style="font-weight:700;color:var(--danger)">Dobbel poeng runde!</div>
+            <div style="color:var(--text-muted);font-size:0.85rem">Alle tippinger denne runden gir dobbelt så mange poeng</div>
+        </div>
+       </div>`
+      : "";
 
   container.innerHTML =
     doubleBanner +
