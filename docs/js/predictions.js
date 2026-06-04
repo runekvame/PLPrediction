@@ -82,17 +82,21 @@ function renderGameweekButtons(matches) {
   );
   const container = document.getElementById("gameweek-buttons");
   container.innerHTML = gameweeks
-    .map(
-      (gw) => `
-        <button 
-            class="${gw === currentGameweek ? "" : "secondary"}" 
-            onclick="selectGameweek(${gw})"
-            style="padding:0.4rem 0.8rem;font-size:0.85rem;position:relative">
-            Runde ${gw}
-            ${DOUBLE_POINTS_GAMEWEEKS.includes(gw) ? '<span style="position:absolute;top:-6px;right:-6px;background:var(--danger);color:white;border-radius:50%;width:16px;height:16px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700">2x</span>' : ""}
-        </button>
-    `,
-    )
+    .map((gw) => {
+      const isDouble = DOUBLE_POINTS_GAMEWEEKS.includes(gw);
+      const isCurrent = gw === currentGameweek;
+      return `
+            <div style="position:relative;display:inline-block">
+                <button 
+                    class="${isCurrent ? "" : "secondary"}" 
+                    onclick="selectGameweek(${gw})"
+                    style="padding:0.4rem 0.8rem;font-size:0.85rem">
+                    Runde ${gw}
+                </button>
+                ${isDouble ? '<span style="position:absolute;top:-8px;right:-8px;background:#f87171;color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">2x</span>' : ""}
+            </div>
+        `;
+    })
     .join("");
 }
 
