@@ -126,3 +126,17 @@ async function getSeasonPrediction(userId, season) {
   );
   return res.json();
 }
+
+async function getSettings() {
+  const res = await fetch(`${API_URL}/Settings`);
+  return res.json();
+}
+
+async function updateSetting(key, value) {
+  const res = await fetch(`${API_URL}/Settings/${key}`, {
+    method: "PATCH",
+    headers: getHeaders(),
+    body: JSON.stringify(value),
+  });
+  return res.json();
+}

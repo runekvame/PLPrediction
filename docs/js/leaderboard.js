@@ -41,6 +41,82 @@ async function loadGameweekLeaderboard(gw) {
   renderLeaderboard(data, "gw-leaderboard-body");
 }
 
+async function loadSeasonPredictionsComparison() {
+  const supabaseUrl = "https://fvzccuhpckmoaurhxfzy.supabase.co";
+  const supabaseKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2emNjdWhwY2ttb2F1cmh4Znp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTQ0MDgsImV4cCI6MjA5NDYzMDQwOH0.lUV1tXVGoh8vRN0QziUPycqN_rSet-HNRr-YkeNVPKQ";
+
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/season_predictions?season=eq.2026-27&select=*,users(username)`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+    },
+  );
+  const predictions = await res.json();
+
+  if (!predictions || predictions.length === 0) return;
+
+  // Get all unique teams
+  const allTeams = predictions[0].predicted_standings;
+
+  const container = document.querySelector("main");
+  const section = document.createElement("div");
+  section.className = "card";
+  section.style.marginTop = "1.5rem";
+  section.innerHTML = `
+        <h2>Sesongtippinger 2026-27</h2>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem">Alle spilleres sesongtippinger</p>
+        <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;padding:0.6rem;border-bottom:1px solid var(--border);color:var(--text-muted)">#</th>
+                        ${predictions
+                          .map(
+                            (p) => `
+                            <th style="text-align:center;padding:0.6rem;border-bottom:1px solid var(--border);color:var(--accent)">
+                                ${p.users?.username || "Ukjent"}
+                            </th>
+                        `,
+                          )
+                          .join("")}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allTeams
+                      .map(
+                        (team, i) => `
+                        <tr style="border-bottom:1px solid var(--border)">
+                            <td style="padding:0.6rem;font-weight:600;color:var(--text-muted)">${i + 1}</td>
+                            ${predictions
+                              .map((p) => {
+                                const pos = p.predicted_standings.indexOf(team);
+                                const diff = Math.abs(pos - i);
+                                const color =
+                                  diff === 0
+                                    ? "var(--accent)"
+                                    : diff === 1
+                                      ? "#facc15"
+                                      : diff === 2
+                                        ? "#f87171"
+                                        : "var(--text-muted)";
+                                return `<td style="text-align:center;padding:0.6rem;color:${color};font-weight:${diff === 0 ? "700" : "400"}">${p.predicted_standings[i]}</td>`;
+                              })
+                              .join("")}
+                        </tr>
+                    `,
+                      )
+                      .join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+  container.appendChild(section);
+}
+
 async function loadPage() {
   // Season leaderboard
   const season = await getLeaderboard();
@@ -81,6 +157,17 @@ async function loadPage() {
   const adminStatus = await isAdmin();
   if (adminStatus) {
     document.getElementById("admin-link").style.display = "block";
+  }
+
+  // Load season predictions if visible
+  const settings = await getSettings();
+  if (Array.isArray(settings)) {
+    const visibleSetting = settings.find(
+      (s) => s.key === "season_predictions_visible",
+    );
+    if (visibleSetting && visibleSetting.value === "true") {
+      await loadSeasonPredictionsComparison();
+    }
   }
 }
 loadPage();

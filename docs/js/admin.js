@@ -160,9 +160,53 @@ async function loadUsers() {
     .join("");
 }
 
+let seasonPredictionsVisible = false;
+
+async function loadSettings() {
+  const settings = await getSettings();
+  if (!Array.isArray(settings)) return;
+
+  const visibleSetting = settings.find(
+    (s) => s.key === "season_predictions_visible",
+  );
+  if (visibleSetting) {
+    seasonPredictionsVisible = visibleSetting.value === "true";
+    updateToggleButton();
+  }
+}
+
+function updateToggleButton() {
+  const btn = document.getElementById("toggle-predictions-btn");
+  if (!btn) return;
+  if (seasonPredictionsVisible) {
+    btn.textContent = "Skjul tippinger";
+    btn.className = "secondary";
+  } else {
+    btn.textContent = "Vis tippinger";
+    btn.className = "";
+  }
+}
+
+async function toggleSeasonPredictions() {
+  const newValue = !seasonPredictionsVisible;
+  const result = await updateSetting(
+    "season_predictions_visible",
+    newValue.toString(),
+  );
+  if (result.message) {
+    seasonPredictionsVisible = newValue;
+    updateToggleButton();
+    showAlert(
+      `Sesongtippinger er nå ${newValue ? "synlige" : "skjulte"}`,
+      "success",
+    );
+  }
+}
+
 async function loadPage() {
   await checkAdmin();
   await loadUsers();
+  await loadSettings();
 }
 
 loadPage();

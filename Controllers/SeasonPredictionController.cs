@@ -59,6 +59,19 @@ namespace PLPrediction.Controllers
             }
 
             return Ok(new { message = "Season prediction submitted successfully" });
+
+            // Check deadline
+SetHeaders();
+var settingsRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/settings?key=eq.season_predictions_deadline&select=value");
+var settingsJson = await settingsRes.Content.ReadAsStringAsync();
+var settings = JsonDocument.Parse(settingsJson).RootElement;
+
+if (settings.GetArrayLength() > 0)
+{
+    var deadline = DateTime.Parse(settings[0].GetProperty("value").GetString()!);
+    if (DateTime.UtcNow > deadline)
+        return BadRequest("Fristen for sesongtipping er utløpt");
+}
         }
 
         [HttpGet("{userId}")]
