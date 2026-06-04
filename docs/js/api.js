@@ -75,7 +75,7 @@ async function submitSeasonPrediction(season, predictedStandings) {
 }
 
 async function getMatchesFromDB() {
-  const supabaseUrl = "https://plprediction.onrender.com";
+  const supabaseUrl = "https://fvzccuhpckmoaurhxfzy.supabase.co";
   const supabaseKey =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2emNjdWhwY2ttb2F1cmh4Znp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTQ0MDgsImV4cCI6MjA5NDYzMDQwOH0.lUV1tXVGoh8vRN0QziUPycqN_rSet-HNRr-YkeNVPKQ";
 
