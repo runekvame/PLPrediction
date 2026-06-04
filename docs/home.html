@@ -58,115 +58,252 @@
 
       <div class="card" style="margin-top: 1.5rem">
         <h2>📋 Poengsystem</h2>
-        <div
-          style="
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1rem;
-          "
-        >
+
+        <div style="margin-top: 1rem; margin-bottom: 1.5rem">
           <div
             style="
-              text-align: center;
-              padding: 1rem;
-              background: var(--bg-input);
-              border-radius: 8px;
+              color: var(--text-muted);
+              font-size: 0.85rem;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin-bottom: 0.8rem;
             "
           >
-            <div style="font-size: 1.5rem; margin-bottom: 0.3rem">✅</div>
-            <div
-              style="font-weight: 700; color: var(--accent); font-size: 1.1rem"
-            >
-              2 poeng
-            </div>
-            <div
-              style="
-                color: var(--text-muted);
-                font-size: 0.8rem;
-                margin-top: 0.3rem;
-              "
-            >
-              Riktig resultat
-            </div>
+            Kamptipping
           </div>
-          <div
-            style="
-              text-align: center;
-              padding: 1rem;
-              background: var(--bg-input);
-              border-radius: 8px;
-            "
-          >
-            <div style="font-size: 1.5rem; margin-bottom: 0.3rem">🎯</div>
+          <div style="display: flex; flex-direction: column; gap: 0.4rem">
             <div
-              style="font-weight: 700; color: var(--accent); font-size: 1.1rem"
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: var(--bg-input);
+                border-radius: 8px;
+              "
             >
-              5 poeng
+              <span style="font-size: 0.9rem"
+                >✅ Riktig resultat (seier / uavgjort / tap)</span
+              >
+              <span
+                style="
+                  color: var(--accent);
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >2 poeng</span
+              >
             </div>
             <div
               style="
-                color: var(--text-muted);
-                font-size: 0.8rem;
-                margin-top: 0.3rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: var(--bg-input);
+                border-radius: 8px;
               "
             >
-              Riktig scoreline
-            </div>
-          </div>
-          <div
-            style="
-              text-align: center;
-              padding: 1rem;
-              background: var(--bg-input);
-              border-radius: 8px;
-            "
-          >
-            <div style="font-size: 1.5rem; margin-bottom: 0.3rem">🏆</div>
-            <div
-              style="font-weight: 700; color: var(--accent); font-size: 1.1rem"
-            >
-              60 poeng
+              <span style="font-size: 0.9rem"
+                >🎯 Riktig resultat + riktig scoreline</span
+              >
+              <span
+                style="
+                  color: var(--accent);
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >5 poeng</span
+              >
             </div>
             <div
               style="
-                color: var(--text-muted);
-                font-size: 0.8rem;
-                margin-top: 0.3rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: var(--bg-input);
+                border-radius: 8px;
               "
             >
-              Maks sesongtipping
+              <span style="font-size: 0.9rem">❌ Feil</span>
+              <span
+                style="
+                  color: var(--text-muted);
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >0 poeng</span
+              >
             </div>
           </div>
         </div>
-        <div
-          style="margin-top: 1rem; display: flex; gap: 0.8rem; flex-wrap: wrap"
-        >
+
+        <div style="margin-bottom: 1.5rem">
           <div
             style="
-              background: rgba(248, 113, 113, 0.1);
-              border: 1px solid rgba(248, 113, 113, 0.3);
-              border-radius: 8px;
-              padding: 0.5rem 0.8rem;
+              color: var(--text-muted);
               font-size: 0.85rem;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin-bottom: 0.8rem;
             "
           >
-            🔥
-            <span style="color: #f87171; font-weight: 600">Dobbel poeng</span> —
-            Runde 1 og 19
+            Sesongtipping
           </div>
+          <div style="display: flex; flex-direction: column; gap: 0.4rem">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: var(--bg-input);
+                border-radius: 8px;
+              "
+            >
+              <span style="font-size: 0.9rem">🥇 Eksakt plassering</span>
+              <span
+                style="
+                  color: var(--accent);
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >3 poeng</span
+              >
+            </div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: var(--bg-input);
+                border-radius: 8px;
+              "
+            >
+              <span style="font-size: 0.9rem">➡️ 1 plass unna</span>
+              <span
+                style="
+                  color: var(--accent);
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >2 poeng</span
+              >
+            </div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: var(--bg-input);
+                border-radius: 8px;
+              "
+            >
+              <span style="font-size: 0.9rem">➡️ 2 plasser unna</span>
+              <span
+                style="
+                  color: var(--accent);
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >1 poeng</span
+              >
+            </div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: var(--bg-input);
+                border-radius: 8px;
+              "
+            >
+              <span style="font-size: 0.9rem">❌ 3+ plasser unna</span>
+              <span
+                style="
+                  color: var(--text-muted);
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >0 poeng</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div>
           <div
             style="
-              background: rgba(168, 85, 247, 0.1);
-              border: 1px solid rgba(168, 85, 247, 0.3);
-              border-radius: 8px;
-              padding: 0.5rem 0.8rem;
+              color: var(--text-muted);
               font-size: 0.85rem;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin-bottom: 0.8rem;
             "
           >
-            ⚡
-            <span style="color: #a855f7; font-weight: 600">Trippel poeng</span>
-            — Runde 38
+            Spesielle runder
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.4rem">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: rgba(248, 113, 113, 0.08);
+                border: 1px solid rgba(248, 113, 113, 0.2);
+                border-radius: 8px;
+              "
+            >
+              <span style="font-size: 0.9rem"
+                >🔥 Dobbel poeng — Runde 1 og 19</span
+              >
+              <span
+                style="
+                  color: #f87171;
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >×2</span
+              >
+            </div>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.7rem 1rem;
+                background: rgba(168, 85, 247, 0.08);
+                border: 1px solid rgba(168, 85, 247, 0.2);
+                border-radius: 8px;
+              "
+            >
+              <span style="font-size: 0.9rem">⚡ Trippel poeng — Runde 38</span>
+              <span
+                style="
+                  color: #a855f7;
+                  font-weight: 700;
+                  white-space: nowrap;
+                  margin-left: 1rem;
+                "
+                >×3</span
+              >
+            </div>
           </div>
         </div>
       </div>
