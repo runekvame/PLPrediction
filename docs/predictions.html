@@ -26,23 +26,98 @@
     <main>
       <div class="page-header">
         <h1>Tippinger</h1>
-        <p>Tipp kampene før avspark</p>
+        <p>Tipp kampene og sesongtabellen</p>
       </div>
 
-      <div class="card" style="margin-bottom: 1.5rem">
-        <h2>Filtrer etter spillerunde</h2>
-        <div
+      <!-- Tabs -->
+      <div
+        style="
+          display: flex;
+          gap: 0.5rem;
+          margin-bottom: 1.5rem;
+          border-bottom: 1px solid var(--border);
+          padding-bottom: 0;
+        "
+      >
+        <button
+          id="tab-matches"
+          onclick="switchTab('matches')"
           style="
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-top: 0.5rem;
+            background: none;
+            color: var(--text);
+            border-bottom: 2px solid var(--accent);
+            border-radius: 0;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
           "
-          id="gameweek-buttons"
-        ></div>
+        >
+          Kamptippinger
+        </button>
+        <button
+          id="tab-season"
+          onclick="switchTab('season')"
+          style="
+            background: none;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+          "
+        >
+          Sesongtabell
+        </button>
       </div>
 
-      <div id="matches-container">Laster...</div>
+      <!-- Match predictions tab -->
+      <div id="matches-tab">
+        <div class="card" style="margin-bottom: 1.5rem">
+          <h2>Filtrer etter spillerunde</h2>
+          <div
+            style="
+              display: flex;
+              gap: 0.5rem;
+              flex-wrap: wrap;
+              margin-top: 0.5rem;
+            "
+            id="gameweek-buttons"
+          ></div>
+        </div>
+        <div id="matches-container">Laster...</div>
+      </div>
+
+      <!-- Season prediction tab -->
+      <div id="season-tab" style="display: none">
+        <div class="card" style="margin-bottom: 1rem">
+          <h2>Tipp sesongtabellen</h2>
+          <p
+            style="
+              color: var(--text-muted);
+              font-size: 0.9rem;
+              margin-bottom: 1rem;
+            "
+          >
+            Dra lagene til riktig posisjon. Du kan endre tipningen frem til
+            sesongstart.
+          </p>
+          <div id="season-prediction-status"></div>
+        </div>
+
+        <div class="card">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 1rem;
+            "
+          >
+            <h2>Din tabell</h2>
+            <button onclick="saveSeasonPrediction()">Lagre tipping</button>
+          </div>
+          <div id="season-standings-list"></div>
+        </div>
+      </div>
     </main>
 
     <script src="js/api.js"></script>

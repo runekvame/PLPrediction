@@ -11,6 +11,53 @@ function logout() {
 let allMatches = [];
 let userPredictions = [];
 let currentGameweek = 1;
+let seasonTeams = [];
+
+const PL_TEAMS = [
+  "Arsenal FC",
+  "Aston Villa FC",
+  "AFC Bournemouth",
+  "Brentford FC",
+  "Brighton & Hove Albion FC",
+  "Burnley FC",
+  "Chelsea FC",
+  "Crystal Palace FC",
+  "Everton FC",
+  "Fulham FC",
+  "Leeds United FC",
+  "Liverpool FC",
+  "Manchester City FC",
+  "Manchester United FC",
+  "Newcastle United FC",
+  "Nottingham Forest FC",
+  "Sunderland AFC",
+  "Tottenham Hotspur FC",
+  "West Ham United FC",
+  "Wolverhampton Wanderers FC",
+];
+
+function switchTab(tab) {
+  if (tab === "matches") {
+    document.getElementById("matches-tab").style.display = "block";
+    document.getElementById("season-tab").style.display = "none";
+    document.getElementById("tab-matches").style.borderBottomColor =
+      "var(--accent)";
+    document.getElementById("tab-matches").style.color = "var(--text)";
+    document.getElementById("tab-season").style.borderBottomColor =
+      "transparent";
+    document.getElementById("tab-season").style.color = "var(--text-muted)";
+  } else {
+    document.getElementById("matches-tab").style.display = "none";
+    document.getElementById("season-tab").style.display = "block";
+    document.getElementById("tab-season").style.borderBottomColor =
+      "var(--accent)";
+    document.getElementById("tab-season").style.color = "var(--text)";
+    document.getElementById("tab-matches").style.borderBottomColor =
+      "transparent";
+    document.getElementById("tab-matches").style.color = "var(--text-muted)";
+    loadSeasonPrediction();
+  }
+}
 
 function formatDate(dateStr) {
   const date = new Date(dateStr);
@@ -137,10 +184,80 @@ async function loadPredictions() {
   userPredictions = await getUserPredictions(userId);
 }
 
+// Season prediction
+function renderSeasonStandings(teams) {
+  const list = document.getElementById("season-standings-list");
+  list.innerHTML = teams
+    .map(
+      (team, i) => `
+        <div id="team-${i}" draggable="true" 
+            ondragstart="dragStart(event, ${i})"
+            ondragover="dragOver(event)"
+            ondrop="drop(event, ${i})"
+            style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:grab">
+            <span style="color:var(--text-muted);font-weight:700;min-width:24px">${i + 1}</span>
+            <span style="flex:1">${team}</span>
+            <span style="color:var(--text-muted);font-size:0.8rem">☰</span>
+        </div>
+    `,
+    )
+    .join("");
+}
+
+let dragSrcIndex = null;
+
+function dragStart(event, index) {
+  dragSrcIndex = index;
+  event.dataTransfer.effectAllowed = "move";
+}
+
+function dragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+}
+
+function drop(event, index) {
+  event.preventDefault();
+  if (dragSrcIndex === index) return;
+
+  const moved = seasonTeams.splice(dragSrcIndex, 1)[0];
+  seasonTeams.splice(index, 0, moved);
+  renderSeasonStandings(seasonTeams);
+}
+
+async function loadSeasonPrediction() {
+  const userId = localStorage.getItem("userId");
+  const existing = await getSeasonPrediction(userId, "2026-27");
+
+  const statusEl = document.getElementById("season-prediction-status");
+
+  if (existing && existing.length > 0 && existing[0].predicted_standings) {
+    seasonTeams = existing[0].predicted_standings;
+    if (existing[0].points_awarded !== null) {
+      statusEl.innerHTML = `<div class="alert success">Du fikk ${existing[0].points_awarded} poeng på sesongtippingen!</div>`;
+    } else {
+      statusEl.innerHTML = `<div class="alert success" style="display:block">Du har allerede levert en tipping. Du kan oppdatere den frem til sesongstart.</div>`;
+    }
+  } else {
+    seasonTeams = [...PL_TEAMS];
+    statusEl.innerHTML = "";
+  }
+
+  renderSeasonStandings(seasonTeams);
+}
+
+async function saveSeasonPrediction() {
+  const result = await submitSeasonPrediction("2026-27", seasonTeams);
+  if (result.message) {
+    alert("Sesongtipping lagret!");
+  } else {
+    alert("Kunne ikke lagre. Prøv igjen.");
+  }
+}
+
 async function loadPage() {
   allMatches = await getMatchesFromDB();
 
-  // Find current or next gameweek
   const now = new Date();
   const upcoming = allMatches.filter((m) => new Date(m.kickoff_time) > now);
   if (upcoming.length > 0) {
@@ -153,7 +270,6 @@ async function loadPage() {
   renderGameweekButtons(allMatches);
   renderMatches(allMatches);
 
-  // Show admin link if admin
   const adminStatus = await isAdmin();
   if (adminStatus) {
     document.getElementById("admin-link").style.display = "block";

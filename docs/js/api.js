@@ -116,3 +116,13 @@ async function deleteUser(userId) {
   });
   return res.json();
 }
+
+async function getSeasonPrediction(userId, season) {
+  const res = await fetch(
+    `${API_URL}/SeasonPredictions/${userId}?season=${season}`,
+    {
+      headers: getHeaders(),
+    },
+  );
+  return res.json();
+}
