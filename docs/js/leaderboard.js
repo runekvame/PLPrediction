@@ -56,66 +56,63 @@ async function loadSeasonPredictionsComparison() {
     },
   );
   const predictions = await res.json();
-
   if (!predictions || predictions.length === 0) return;
-
-  // Get all unique teams
-  const allTeams = predictions[0].predicted_standings;
 
   const container = document.querySelector("main");
   const section = document.createElement("div");
   section.className = "card";
   section.style.marginTop = "1.5rem";
+
   section.innerHTML = `
-        <h2>Sesongtippinger 2026-27</h2>
-        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem">Alle spilleres sesongtippinger</p>
-        <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
-                <thead>
-                    <tr>
-                        <th style="text-align:left;padding:0.6rem;border-bottom:1px solid var(--border);color:var(--text-muted)">#</th>
-                        ${predictions
-                          .map(
-                            (p) => `
-                            <th style="text-align:center;padding:0.6rem;border-bottom:1px solid var(--border);color:var(--accent)">
-                                ${p.users?.username || "Ukjent"}
-                            </th>
-                        `,
-                          )
-                          .join("")}
-                    </tr>
-                </thead>
-                <tbody>
-                    ${allTeams
-                      .map(
-                        (team, i) => `
-                        <tr style="border-bottom:1px solid var(--border)">
-                            <td style="padding:0.6rem;font-weight:600;color:var(--text-muted)">${i + 1}</td>
-                            ${predictions
-                              .map((p) => {
-                                const pos = p.predicted_standings.indexOf(team);
-                                const diff = Math.abs(pos - i);
-                                const color =
-                                  diff === 0
-                                    ? "var(--accent)"
-                                    : diff === 1
-                                      ? "#facc15"
-                                      : diff === 2
-                                        ? "#f87171"
-                                        : "var(--text-muted)";
-                                return `<td style="text-align:center;padding:0.6rem;color:${color};font-weight:${diff === 0 ? "700" : "400"}">${p.predicted_standings[i]}</td>`;
-                              })
-                              .join("")}
-                        </tr>
-                    `,
-                      )
-                      .join("")}
-                </tbody>
-            </table>
+    <h2>Sesongtippinger 2026-27</h2>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem">
+      Trykk på en spiller for å se deres tipping
+    </p>
+    <div style="display:flex;flex-direction:column;gap:0.5rem" id="season-pred-list">
+      ${predictions
+        .map(
+          (p, idx) => `
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <div onclick="togglePrediction(${idx})"
+            style="display:flex;justify-content:space-between;align-items:center;padding:0.8rem 1rem;cursor:pointer;background:var(--bg-input);user-select:none">
+            <span style="font-weight:600">${p.users?.username || "Ukjent"}</span>
+            <span id="arrow-${idx}" style="color:var(--text-muted);font-size:0.85rem">▼</span>
+          </div>
+          <div id="pred-${idx}" style="display:none;padding:0.8rem 1rem">
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:0.3rem 1rem">
+              ${p.predicted_standings
+                .map(
+                  (team, i) => `
+                <span style="color:var(--text-muted);font-weight:700;font-size:0.85rem">${i + 1}.</span>
+                <span style="font-size:0.9rem">${team}</span>
+              `,
+                )
+                .join("")}
+            </div>
+          </div>
         </div>
-    `;
+      `,
+        )
+        .join("")}
+    </div>
+  `;
+
   container.appendChild(section);
 }
+
+function togglePrediction(idx) {
+  const content = document.getElementById(`pred-${idx}`);
+  const arrow = document.getElementById(`arrow-${idx}`);
+  if (content.style.display === "none") {
+    content.style.display = "block";
+    arrow.textContent = "▲";
+  } else {
+    content.style.display = "none";
+    arrow.textContent = "▼";
+  }
+}
+
+window.togglePrediction = togglePrediction;
 
 async function loadPage() {
   // Season leaderboard
