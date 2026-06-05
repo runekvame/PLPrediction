@@ -70,24 +70,6 @@ function renderRecentMatches(matches) {
     .join("");
 }
 
-function renderMiniLeaderboard(players) {
-  if (!players || players.length === 0) {
-    return '<p style="color:var(--text-muted)">Ingen spillere ennå</p>';
-  }
-
-  return players
-    .slice(0, 5)
-    .map(
-      (p, i) => `
-    <div style="display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--border)">
-        <span style="color:var(--text-muted)">${i + 1}. ${p.username}</span>
-        <span style="color:var(--accent);font-weight:700">${p.total_points} p</span>
-    </div>
-  `,
-    )
-    .join("");
-}
-
 function renderPodium(players) {
   const podium = document.getElementById("podium");
   if (!players || players.length === 0) {
@@ -143,8 +125,6 @@ async function loadPage() {
 
   const leaderboard = await getLeaderboard();
   renderPodium(leaderboard);
-  document.getElementById("mini-leaderboard").innerHTML =
-    renderMiniLeaderboard(leaderboard);
 
   const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
   const TRIPLE_POINTS_GAMEWEEKS = [38];
