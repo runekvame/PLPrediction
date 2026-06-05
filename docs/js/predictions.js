@@ -335,6 +335,51 @@ async function saveSeasonPrediction() {
   }
 }
 
+async function loadDeadlineCountdown() {
+  const settings = await getSettings();
+  if (!Array.isArray(settings)) return;
+
+  const deadlineSetting = settings.find(
+    (s) => s.key === "season_predictions_deadline",
+  );
+  if (!deadlineSetting) return;
+
+  const deadline = new Date(deadlineSetting.value);
+  const now = new Date();
+
+  if (now > deadline) return;
+
+  const countdown = document.getElementById("deadline-countdown");
+  const countdownText = document.getElementById("countdown-text");
+  countdown.style.display = "inline-flex";
+
+  function updateCountdown() {
+    const now = new Date();
+    const diff = deadline - now;
+
+    if (diff <= 0) {
+      countdownText.textContent = "Fristen er utløpt";
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    if (days > 0) {
+      countdownText.textContent = `Sesongtipping stenger om ${days} dager, ${hours} timer og ${minutes} min`;
+    } else if (hours > 0) {
+      countdownText.textContent = `Sesongtipping stenger om ${hours} timer, ${minutes} min og ${seconds} sek`;
+    } else {
+      countdownText.textContent = `Sesongtipping stenger om ${minutes} min og ${seconds} sek`;
+    }
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+}
+
 async function loadPage() {
   allMatches = await getMatchesFromDB();
 
@@ -354,6 +399,7 @@ async function loadPage() {
   if (adminStatus) {
     document.getElementById("admin-link").style.display = "block";
   }
+  await loadDeadlineCountdown();
 }
 
 loadPage();
