@@ -90,16 +90,16 @@ function renderGameweekButtons(matches) {
       const badgeColor = isTriple ? "#a855f7" : "#f87171";
       const badgeText = isTriple ? "3x" : "2x";
       return `
-            <div style="position:relative;display:inline-block">
-                <button 
-                    class="${isCurrent ? "" : "secondary"}" 
-                    onclick="selectGameweek(${gw})"
-                    style="padding:0.4rem 0.8rem;font-size:0.85rem">
-                    Runde ${gw}
-                </button>
-                ${isDouble || isTriple ? `<span style="position:absolute;top:-8px;right:-8px;background:${badgeColor};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${badgeText}</span>` : ""}
-            </div>
-        `;
+      <div style="position:relative;display:inline-block">
+          <button 
+              class="${isCurrent ? "" : "secondary"}" 
+              onclick="selectGameweek(${gw})"
+              style="padding:0.4rem 0.8rem;font-size:0.85rem">
+              Runde ${gw}
+          </button>
+          ${isDouble || isTriple ? `<span style="position:absolute;top:-8px;right:-8px;background:${badgeColor};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${badgeText}</span>` : ""}
+      </div>
+    `;
     })
     .join("");
 }
@@ -141,51 +141,54 @@ function renderMatches(matches) {
         const isPast = new Date(m.kickoff_time) < new Date();
 
         return `
-        <div class="match-card" style="flex-direction:column;align-items:stretch;gap:0.8rem">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-                <div class="match-teams" style="flex:1">
-                    <span class="match-team">${m.home_team}</span>
-                    ${
-                      isFinished
-                        ? `<span class="match-score">${m.home_score} - ${m.away_score}</span>`
-                        : `<span class="match-score" style="background:none;color:var(--text-muted)">vs</span>`
-                    }
-                    <span class="match-team away">${m.away_team}</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:0.5rem">
-                    <span class="badge ${isFinished ? "finished" : "upcoming"}">${isFinished ? "Ferdig" : formatDate(m.kickoff_time)}</span>
-                </div>
-            </div>
-
-            <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:0.8rem">
-                <span style="color:var(--text-muted);font-size:0.85rem">Din tipping:</span>
-                ${
-                  isPast || isFinished
-                    ? prediction
-                      ? `<span style="font-weight:600">${prediction.predicted_home} - ${prediction.predicted_away} 
-                           ${prediction.points_awarded !== null ? `<span style="color:var(--accent);margin-left:0.5rem">${prediction.points_awarded} p</span>` : ""}</span>`
-                      : `<span style="color:var(--text-muted)">Ingen tipping</span>`
-                    : prediction
-                      ? `<div style="display:flex;align-items:center;gap:0.5rem">
-                            <div class="prediction-inputs">
-                                <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
-                                <span style="color:var(--text-muted)">-</span>
-                                <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
-                            </div>
-                            <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
-                           </div>`
-                      : `<div style="display:flex;align-items:center;gap:0.5rem">
-                            <div class="prediction-inputs">
-                                <input type="number" id="home-${m.id}" value="0" min="0" max="20">
-                                <span style="color:var(--text-muted)">-</span>
-                                <input type="number" id="away-${m.id}" value="0" min="0" max="20">
-                            </div>
-                            <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Tipp</button>
-                           </div>`
-                }
-            </div>
+<div class="match-card" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;gap:0.8rem;${isFinished ? "cursor:pointer" : ""}"
+        ${isFinished ? `onclick="loadMatchPredictions('${m.id}', '${m.home_team}', '${m.away_team}', ${m.home_score}, ${m.away_score})"` : ""}>
+        <div class="match-teams" style="flex:1">
+            <span class="match-team">${m.home_team}</span>
+            ${
+              isFinished
+                ? `<span class="match-score">${m.home_score} - ${m.away_score}</span>`
+                : `<span class="match-score" style="background:none;color:var(--text-muted)">vs</span>`
+            }
+            <span class="match-team away">${m.away_team}</span>
         </div>
-        `;
+        <div style="display:flex;align-items:center;gap:0.5rem">
+            <span class="badge ${isFinished ? "finished" : "upcoming"}">${isFinished ? "Ferdig" : formatDate(m.kickoff_time)}</span>
+            ${isFinished ? '<span style="color:var(--text-muted);font-size:0.8rem">▼</span>' : ""}
+        </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding:0.8rem 1.5rem;">
+        <span style="color:var(--text-muted);font-size:0.85rem">Din tipping:</span>
+        ${
+          isPast || isFinished
+            ? prediction
+              ? `<span style="font-weight:600">${prediction.predicted_home} - ${prediction.predicted_away}
+                   ${prediction.points_awarded !== null ? `<span style="color:var(--accent);margin-left:0.5rem">${prediction.points_awarded} p</span>` : ""}</span>`
+              : `<span style="color:var(--text-muted)">Ingen tipping</span>`
+            : prediction
+              ? `<div style="display:flex;align-items:center;gap:0.5rem">
+                    <div class="prediction-inputs">
+                        <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
+                        <span style="color:var(--text-muted)">-</span>
+                        <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
+                    </div>
+                    <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
+                   </div>`
+              : `<div style="display:flex;align-items:center;gap:0.5rem">
+                    <div class="prediction-inputs">
+                        <input type="number" id="home-${m.id}" value="0" min="0" max="20">
+                        <span style="color:var(--text-muted)">-</span>
+                        <input type="number" id="away-${m.id}" value="0" min="0" max="20">
+                    </div>
+                    <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Tipp</button>
+                   </div>`
+        }
+    </div>
+    <div id="match-history-${m.id}"></div>
+</div>
+    `;
       })
       .join("");
 }
@@ -235,18 +238,18 @@ function renderSeasonStandings(teams) {
   list.innerHTML = teams
     .map(
       (team, i) => `
-        <div id="team-${i}" draggable="true"
-            ondragstart="dragStart(event, ${i})"
-            ondragover="dragOver(event, ${i})"
-            ondragleave="dragLeave(event)"
-            ondrop="drop(event, ${i})"
-            ondragend="dragEnd(event)"
-            style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:grab;transition:all 0.15s ease">
-            <span style="color:var(--accent);font-weight:700;min-width:24px">${i + 1}</span>
-            <span style="flex:1;font-weight:500">${team}</span>
-            <span style="color:var(--text-muted);font-size:1rem">⠿</span>
-        </div>
-    `,
+    <div id="team-${i}" draggable="true"
+        ondragstart="dragStart(event, ${i})"
+        ondragover="dragOver(event, ${i})"
+        ondragleave="dragLeave(event)"
+        ondrop="drop(event, ${i})"
+        ondragend="dragEnd(event)"
+        style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:grab;transition:all 0.15s ease">
+        <span style="color:var(--accent);font-weight:700;min-width:24px">${i + 1}</span>
+        <span style="flex:1;font-weight:500">${team}</span>
+        <span style="color:var(--text-muted);font-size:1rem">⠿</span>
+    </div>
+  `,
     )
     .join("");
 }
@@ -379,6 +382,80 @@ async function loadDeadlineCountdown() {
   updateCountdown();
   setInterval(updateCountdown, 1000);
 }
+
+async function loadMatchPredictions(
+  matchId,
+  homeTeam,
+  awayTeam,
+  homeScore,
+  awayScore,
+) {
+  const supabaseUrl = "https://fvzccuhpckmoaurhxfzy.supabase.co";
+  const supabaseKey =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2emNjdWhwY2ttb2F1cmh4Znp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTQ0MDgsImV4cCI6MjA5NDYzMDQwOH0.lUV1tXVGoh8vRN0QziUPycqN_rSet-HNRr-YkeNVPKQ";
+
+  const existing = document.getElementById(`history-${matchId}`);
+  if (existing) {
+    existing.style.display =
+      existing.style.display === "none" ? "block" : "none";
+    return;
+  }
+
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/predictions?match_id=eq.${matchId}&select=*,users(username)&order=points_awarded.desc`,
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+    },
+  );
+  const predictions = await res.json();
+
+  const container = document.getElementById(`match-history-${matchId}`);
+  if (!container) return;
+
+  if (!predictions || predictions.length === 0) {
+    container.innerHTML = `
+      <div id="history-${matchId}" style="padding:0.8rem 1.5rem;border-top:1px solid var(--border);color:var(--text-muted);font-size:0.85rem">
+          Ingen tippinger for denne kampen
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div id="history-${matchId}" style="border-top:1px solid var(--border);padding:0.5rem 0">
+        <div style="display:grid;grid-template-columns:1fr auto auto;gap:0.5rem;padding:0.4rem 1.5rem;margin-bottom:0.3rem">
+            <span style="color:var(--text-muted);font-size:0.8rem;font-weight:600">SPILLER</span>
+            <span style="color:var(--text-muted);font-size:0.8rem;font-weight:600;text-align:center">TIPPING</span>
+            <span style="color:var(--text-muted);font-size:0.8rem;font-weight:600;text-align:right">POENG</span>
+        </div>
+        ${predictions
+          .map((p) => {
+            const pts = p.points_awarded;
+            const isExact =
+              p.predicted_home === homeScore && p.predicted_away === awayScore;
+            const isCorrect = pts > 0;
+            const pointColor = isExact
+              ? "var(--accent)"
+              : isCorrect
+                ? "#facc15"
+                : "var(--text-muted)";
+            const icon = isExact ? "🎯" : isCorrect ? "✅" : "❌";
+            return `
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:0.5rem;align-items:center;padding:0.5rem 1.5rem;border-radius:0;background:${isExact ? "rgba(74,222,128,0.05)" : "transparent"}">
+                <span style="font-size:0.9rem;font-weight:500">${p.users?.username || "Ukjent"}</span>
+                <span style="text-align:center;font-weight:600;font-size:0.9rem;background:var(--bg-input);padding:0.2rem 0.6rem;border-radius:6px">${p.predicted_home} - ${p.predicted_away}</span>
+                <span style="text-align:right;font-weight:700;color:${pointColor};font-size:0.9rem">${icon} ${pts !== null ? pts + "p" : "-"}</span>
+            </div>
+          `;
+          })
+          .join("")}
+    </div>
+  `;
+}
+
+window.loadMatchPredictions = loadMatchPredictions;
 
 async function loadPage() {
   allMatches = await getMatchesFromDB();
