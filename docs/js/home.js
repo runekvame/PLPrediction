@@ -129,6 +129,11 @@ function renderPodium(players) {
     placeHTML(second, 2) + placeHTML(first, 1) + placeHTML(third, 3);
 }
 
+function toggleNav() {
+  document.getElementById("nav-menu").classList.toggle("open");
+}
+window.toggleNav = toggleNav;
+
 async function loadPage() {
   const matches = await getMatchesFromDB();
   document.getElementById("upcoming-matches").innerHTML =

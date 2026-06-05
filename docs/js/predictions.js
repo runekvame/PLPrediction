@@ -455,6 +455,11 @@ async function loadMatchPredictions(
   `;
 }
 
+function toggleNav() {
+  document.getElementById("nav-menu").classList.toggle("open");
+}
+window.toggleNav = toggleNav;
+
 window.loadMatchPredictions = loadMatchPredictions;
 
 async function loadPage() {

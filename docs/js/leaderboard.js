@@ -112,6 +112,11 @@ function togglePrediction(idx) {
   }
 }
 
+function toggleNav() {
+  document.getElementById("nav-menu").classList.toggle("open");
+}
+window.toggleNav = toggleNav;
+
 window.togglePrediction = togglePrediction;
 
 async function loadPage() {

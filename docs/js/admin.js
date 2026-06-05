@@ -203,6 +203,11 @@ async function toggleSeasonPredictions() {
   }
 }
 
+function toggleNav() {
+  document.getElementById("nav-menu").classList.toggle("open");
+}
+window.toggleNav = toggleNav;
+
 async function loadPage() {
   await checkAdmin();
   await loadUsers();
