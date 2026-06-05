@@ -53,6 +53,6 @@ app.UseCors();
 
 //app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapGet("/health", () => "OK");
+app.MapMethods("/health", new[] { "GET", "HEAD" }, () => "OK");
 app.MapControllers();
 app.Run();
