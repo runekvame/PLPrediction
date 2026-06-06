@@ -8,3 +8,4 @@ A Premier League score prediction website for my friend group.
 - Database: Supabase (PostgreSQL)
 - Hosting: Render
 - Football data: football-data.org
+- Uptimerobot for å holde siden aktiv
