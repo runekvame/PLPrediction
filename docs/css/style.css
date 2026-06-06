@@ -18,14 +18,30 @@
 
 body {
   background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(15, 17, 23, 0.7), rgba(15, 17, 23, 0.7)),
+    url("../images/Background.png");
+
+  background-size: 100% 100%;
+  background-position: center 30%;
+  background-attachment: fixed;
   color: var(--text);
   font-family: "Segoe UI", system-ui, sans-serif;
   min-height: 100vh;
 }
+@media (max-width: 768px) {
+  body {
+    background-image:
+      linear-gradient(rgba(15, 17, 23, 0.7), rgba(15, 17, 23, 0.7)),
+      url("../images/BackgroundMobile.png");
+  }
+}
 
 /* Navigation */
 nav {
-  background-color: var(--bg-card);
+  background-color: rgba(26, 29, 39, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   padding: 0 2rem;
   display: flex;
@@ -82,7 +98,9 @@ main {
 
 /* Cards */
 .card {
-  background-color: var(--bg-card);
+  background-color: rgba(26, 29, 39, 0.3);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
@@ -167,7 +185,9 @@ button.danger {
 }
 
 .auth-card {
-  background-color: var(--bg-card);
+  background-color: rgba(26, 29, 39, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 2.5rem;
@@ -215,7 +235,9 @@ button.danger {
 
 /* Match card */
 .match-card {
-  background-color: var(--bg-card);
+  background-color: rgba(26, 29, 39, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.2rem 1.5rem;
