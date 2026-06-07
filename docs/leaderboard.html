@@ -13,7 +13,7 @@
       <ul id="nav-menu">
         <li><a href="home.html">Hjem</a></li>
         <li><a href="predictions.html">Tippinger</a></li>
-        <li><a href="leaderboard.html">Tabell</a></li>
+        <li><a href="leaderboard.html" class="active">Tabell</a></li>
         <li>
           <a href="admin.html" id="admin-link" style="display: none">Admin</a>
         </li>
@@ -40,8 +40,76 @@
             </tr>
           </thead>
           <tbody id="leaderboard-body">
+            <!-- Skeleton rows -->
             <tr>
-              <td colspan="3" style="color: var(--text-muted)">Laster...</td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 20px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 120px"></div>
+              </td>
+              <td style="text-align: right">
+                <div
+                  class="skeleton skeleton-text"
+                  style="width: 40px; margin-left: auto"
+                ></div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 20px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 100px"></div>
+              </td>
+              <td style="text-align: right">
+                <div
+                  class="skeleton skeleton-text"
+                  style="width: 40px; margin-left: auto"
+                ></div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 20px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 140px"></div>
+              </td>
+              <td style="text-align: right">
+                <div
+                  class="skeleton skeleton-text"
+                  style="width: 40px; margin-left: auto"
+                ></div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 20px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 110px"></div>
+              </td>
+              <td style="text-align: right">
+                <div
+                  class="skeleton skeleton-text"
+                  style="width: 40px; margin-left: auto"
+                ></div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 20px"></div>
+              </td>
+              <td>
+                <div class="skeleton skeleton-text" style="width: 130px"></div>
+              </td>
+              <td style="text-align: right">
+                <div
+                  class="skeleton skeleton-text"
+                  style="width: 40px; margin-left: auto"
+                ></div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -57,7 +125,29 @@
             margin-bottom: 1rem;
           "
           id="gw-buttons"
-        ></div>
+        >
+          <!-- Skeleton gameweek buttons -->
+          <div
+            class="skeleton"
+            style="width: 80px; height: 36px; border-radius: 8px"
+          ></div>
+          <div
+            class="skeleton"
+            style="width: 80px; height: 36px; border-radius: 8px"
+          ></div>
+          <div
+            class="skeleton"
+            style="width: 80px; height: 36px; border-radius: 8px"
+          ></div>
+          <div
+            class="skeleton"
+            style="width: 80px; height: 36px; border-radius: 8px"
+          ></div>
+          <div
+            class="skeleton"
+            style="width: 80px; height: 36px; border-radius: 8px"
+          ></div>
+        </div>
         <table class="leaderboard-table">
           <thead>
             <tr>

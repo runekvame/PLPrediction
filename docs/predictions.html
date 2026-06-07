@@ -12,7 +12,7 @@
       <button class="nav-hamburger" onclick="toggleNav()">☰</button>
       <ul id="nav-menu">
         <li><a href="home.html">Hjem</a></li>
-        <li><a href="predictions.html">Tippinger</a></li>
+        <li><a href="predictions.html" class="active">Tippinger</a></li>
         <li><a href="leaderboard.html">Tabell</a></li>
         <li>
           <a href="admin.html" id="admin-link" style="display: none">Admin</a>
@@ -102,9 +102,38 @@
               margin-top: 0.5rem;
             "
             id="gameweek-buttons"
-          ></div>
+          >
+            <!-- Skeleton gameweek buttons -->
+            <div
+              class="skeleton"
+              style="width: 80px; height: 36px; border-radius: 8px"
+            ></div>
+            <div
+              class="skeleton"
+              style="width: 80px; height: 36px; border-radius: 8px"
+            ></div>
+            <div
+              class="skeleton"
+              style="width: 80px; height: 36px; border-radius: 8px"
+            ></div>
+            <div
+              class="skeleton"
+              style="width: 80px; height: 36px; border-radius: 8px"
+            ></div>
+            <div
+              class="skeleton"
+              style="width: 80px; height: 36px; border-radius: 8px"
+            ></div>
+          </div>
         </div>
-        <div id="matches-container">Laster...</div>
+        <div id="matches-container">
+          <!-- Skeleton match cards -->
+          <div class="skeleton skeleton-match"></div>
+          <div class="skeleton skeleton-match"></div>
+          <div class="skeleton skeleton-match"></div>
+          <div class="skeleton skeleton-match"></div>
+          <div class="skeleton skeleton-match"></div>
+        </div>
       </div>
 
       <!-- Season prediction tab -->

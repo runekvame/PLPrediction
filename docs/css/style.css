@@ -699,3 +699,73 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+/* Skeleton loaders */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-match {
+  height: 64px;
+  margin-bottom: 0.8rem;
+  border-radius: 12px;
+}
+
+.skeleton-podium-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-podium-name {
+  height: 12px;
+  width: 60px;
+  margin-bottom: 0.3rem;
+}
+
+.skeleton-podium-points {
+  height: 12px;
+  width: 40px;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-podium-block-first {
+  height: 90px;
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+}
+
+.skeleton-podium-block-second {
+  height: 65px;
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+}
+
+.skeleton-podium-block-third {
+  height: 50px;
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+}
