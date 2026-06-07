@@ -30,14 +30,8 @@ body {
   min-height: 100vh;
 }
 @media (max-width: 768px) {
-  html,
-  body {
-    height: 100%;
-    background: transparent;
-  }
-
-  body::before {
-    content: "";
+  #mobile-bg {
+    display: block;
     position: fixed;
     top: 0;
     left: 0;
@@ -49,6 +43,27 @@ body {
     background-size: cover;
     background-position: center center;
     z-index: -1;
+  }
+
+  body {
+    background: transparent;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  nav ul {
+    gap: 1rem;
+  }
+
+  .match-card {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
