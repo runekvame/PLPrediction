@@ -22,7 +22,7 @@ body {
     linear-gradient(rgba(15, 17, 23, 0.7), rgba(15, 17, 23, 0.7)),
     url("../images/Background.png");
 
-  background-size: 100% 100%;
+  background-size: cover;
   background-position: center 30%;
   background-attachment: fixed;
   color: var(--text);
