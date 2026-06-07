@@ -30,10 +30,18 @@ body {
   min-height: 100vh;
 }
 @media (max-width: 768px) {
-  body {
+  html {
     background-image:
       linear-gradient(rgba(15, 17, 23, 0.7), rgba(15, 17, 23, 0.7)),
       url("../images/BackgroundMobile.png");
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center center;
+    min-height: 100%;
+  }
+
+  body {
+    background: transparent;
   }
 }
 
