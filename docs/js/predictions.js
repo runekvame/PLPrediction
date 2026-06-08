@@ -230,7 +230,7 @@ async function loadPredictions() {
   userPredictions = await getUserPredictions(userId);
 }
 
-// Season prediction
+// // Season prediction
 let dragSrcIndex = null;
 let touchDragIndex = null;
 let touchClone = null;
@@ -255,7 +255,6 @@ function renderSeasonStandings(teams) {
     )
     .join("");
 
-  // Add touch events after rendering
   teams.forEach((_, i) => {
     const el = document.getElementById(`team-${i}`);
     el.addEventListener("touchstart", touchStart, { passive: false });
@@ -264,7 +263,12 @@ function renderSeasonStandings(teams) {
   });
 }
 
-// Desktop drag events
+function updatePositionNumbers() {
+  document.querySelectorAll('[id^="team-"]').forEach((el, i) => {
+    el.querySelector("span:first-child").textContent = i + 1;
+  });
+}
+
 function dragStart(event, index) {
   dragSrcIndex = index;
   event.dataTransfer.effectAllowed = "move";
@@ -313,23 +317,22 @@ function drop(event, index) {
   renderSeasonStandings(seasonTeams);
 }
 
-// Touch drag events
 function touchStart(event) {
   const el = event.currentTarget;
   touchDragIndex = parseInt(el.id.replace("team-", ""));
 
-  // Create a visual clone to follow the finger
   touchClone = el.cloneNode(true);
   touchClone.style.position = "fixed";
   touchClone.style.zIndex = "1000";
-  touchClone.style.opacity = "0.85";
+  touchClone.style.opacity = "0.9";
   touchClone.style.pointerEvents = "none";
   touchClone.style.width = el.offsetWidth + "px";
   touchClone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4)";
   touchClone.style.borderColor = "var(--accent)";
+  touchClone.style.transition = "none";
   document.body.appendChild(touchClone);
 
-  el.style.opacity = "0.4";
+  el.style.opacity = "0.3";
 
   const touch = event.touches[0];
   touchClone.style.left = touch.clientX - el.offsetWidth / 2 + "px";
@@ -343,21 +346,37 @@ function touchMove(event) {
   if (touchClone === null) return;
 
   const touch = event.touches[0];
-  const el = document.getElementById(`team-${touchDragIndex}`);
-  touchClone.style.left = touch.clientX - el.offsetWidth / 2 + "px";
-  touchClone.style.top = touch.clientY - el.offsetHeight / 2 + "px";
+  const dragEl = document.getElementById(`team-${touchDragIndex}`);
+  touchClone.style.left = touch.clientX - dragEl.offsetWidth / 2 + "px";
+  touchClone.style.top = touch.clientY - dragEl.offsetHeight / 2 + "px";
 
-  // Highlight the item under the finger
+  touchClone.style.display = "none";
+  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  touchClone.style.display = "";
+
   document.querySelectorAll('[id^="team-"]').forEach((el) => {
     el.style.borderColor = "var(--border)";
-    el.style.transform = "scale(1)";
   });
 
-  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
   const teamBelow = elementBelow?.closest('[id^="team-"]');
   if (teamBelow && teamBelow.id !== `team-${touchDragIndex}`) {
     teamBelow.style.borderColor = "var(--accent)";
-    teamBelow.style.transform = "scale(1.02)";
+
+    const list = document.getElementById("season-standings-list");
+    const belowIndex = parseInt(teamBelow.id.replace("team-", ""));
+    const dragEl2 = document.getElementById(`team-${touchDragIndex}`);
+
+    if (belowIndex > touchDragIndex) {
+      list.insertBefore(dragEl2, teamBelow.nextSibling);
+    } else {
+      list.insertBefore(dragEl2, teamBelow);
+    }
+
+    const moved = seasonTeams.splice(touchDragIndex, 1)[0];
+    seasonTeams.splice(belowIndex, 0, moved);
+    touchDragIndex = belowIndex;
+
+    updatePositionNumbers();
   }
 }
 
@@ -372,21 +391,6 @@ function touchEnd(event) {
     el.style.borderColor = "var(--border)";
     el.style.transform = "scale(1)";
   });
-
-  if (touchDragIndex === null) return;
-
-  const touch = event.changedTouches[0];
-  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-  const teamBelow = elementBelow?.closest('[id^="team-"]');
-
-  if (teamBelow) {
-    const dropIndex = parseInt(teamBelow.id.replace("team-", ""));
-    if (dropIndex !== touchDragIndex) {
-      const moved = seasonTeams.splice(touchDragIndex, 1)[0];
-      seasonTeams.splice(dropIndex, 0, moved);
-      renderSeasonStandings(seasonTeams);
-    }
-  }
 
   touchDragIndex = null;
 }
