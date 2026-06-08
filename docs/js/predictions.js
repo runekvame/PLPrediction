@@ -234,6 +234,7 @@ async function loadPredictions() {
 let dragSrcIndex = null;
 let touchDragIndex = null;
 let touchClone = null;
+let longPressTimer = null;
 
 function renderSeasonStandings(teams) {
   const list = document.getElementById("season-standings-list");
@@ -319,30 +320,35 @@ function drop(event, index) {
 
 function touchStart(event) {
   const el = event.currentTarget;
-  touchDragIndex = parseInt(el.id.replace("team-", ""));
+  const index = parseInt(el.id.replace("team-", ""));
 
-  touchClone = el.cloneNode(true);
-  touchClone.style.position = "fixed";
-  touchClone.style.zIndex = "1000";
-  touchClone.style.opacity = "0.9";
-  touchClone.style.pointerEvents = "none";
-  touchClone.style.width = el.offsetWidth + "px";
-  touchClone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4)";
-  touchClone.style.borderColor = "var(--accent)";
-  touchClone.style.transition = "none";
-  document.body.appendChild(touchClone);
+  // Long press delay before drag activates
+  longPressTimer = setTimeout(() => {
+    touchDragIndex = index;
 
-  el.style.opacity = "0.3";
+    touchClone = el.cloneNode(true);
+    touchClone.style.position = "fixed";
+    touchClone.style.zIndex = "1000";
+    touchClone.style.opacity = "0.9";
+    touchClone.style.pointerEvents = "none";
+    touchClone.style.width = el.offsetWidth + "px";
+    touchClone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4)";
+    touchClone.style.borderColor = "var(--accent)";
+    touchClone.style.transition = "none";
+    document.body.appendChild(touchClone);
 
-  const touch = event.touches[0];
-  touchClone.style.left = touch.clientX - el.offsetWidth / 2 + "px";
-  touchClone.style.top = touch.clientY - el.offsetHeight / 2 + "px";
+    const touch = event.touches[0];
+    touchClone.style.left = touch.clientX - el.offsetWidth / 2 + "px";
+    touchClone.style.top = touch.clientY - el.offsetHeight / 2 + "px";
+
+    el.style.opacity = "0.3";
+  }, 300);
 
   event.preventDefault();
 }
 
 function touchMove(event) {
-  event.preventDefault();
+  clearTimeout(longPressTimer);
   if (touchClone === null) return;
 
   const touch = event.touches[0];
@@ -393,6 +399,7 @@ function touchMove(event) {
 }
 
 function touchEnd(event) {
+  clearTimeout(longPressTimer);
   if (touchClone) {
     touchClone.remove();
     touchClone = null;
