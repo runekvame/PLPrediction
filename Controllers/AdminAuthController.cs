@@ -48,6 +48,43 @@ namespace PLPrediction.Controllers
             }
         }
 
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers([FromHeader] string authorization)
+        {
+            try
+            {
+                // Verify admin
+                var token = authorization.Replace("Bearer ", "");
+                var adminUser = await _supabase.Auth.GetUser(token);
+                if (adminUser == null) return Unauthorized();
+
+                _http.DefaultRequestHeaders.Clear();
+                _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+                _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+                var adminCheck = await _http.GetAsync($"{_supabaseUrl}/rest/v1/users?id=eq.{adminUser.Id}&select=is_admin");
+                var adminJson = await adminCheck.Content.ReadAsStringAsync();
+                var adminData = JsonDocument.Parse(adminJson).RootElement;
+
+                if (adminData.GetArrayLength() == 0 || !adminData[0].GetProperty("is_admin").GetBoolean())
+                    return Unauthorized("Not an admin");
+
+                // Fetch all users
+                _http.DefaultRequestHeaders.Clear();
+                _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+                _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+                var res = await _http.GetAsync($"{_supabaseUrl}/rest/v1/users?select=id,username,total_points,is_admin&order=total_points.desc");
+                var json = await res.Content.ReadAsStringAsync();
+
+                return Content(json, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("createuser")]
         public async Task<IActionResult> CreateUser(
             [FromBody] PLPrediction.DTOs.RegisterDTO dto,
