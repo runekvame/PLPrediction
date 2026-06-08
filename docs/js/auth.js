@@ -8,11 +8,15 @@ function showAlert(message, type = "error") {
 async function handleLogin() {
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
+  const btn = document.getElementById("login-btn");
 
   if (!email || !password) {
     showAlert("Fyll inn e-post og passord");
     return;
   }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Logger inn...';
 
   const result = await login(email, password);
 
@@ -21,6 +25,8 @@ async function handleLogin() {
     localStorage.setItem("userId", result.userId);
     window.location.href = "home.html";
   } else {
+    btn.disabled = false;
+    btn.innerHTML = "Logg inn";
     showAlert("Feil e-post eller passord");
   }
 }

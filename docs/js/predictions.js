@@ -165,25 +165,25 @@ function renderMatches(matches) {
           isPast || isFinished
             ? prediction
               ? `<span style="font-weight:600">${prediction.predicted_home} - ${prediction.predicted_away}
-                   ${prediction.points_awarded !== null ? `<span style="color:var(--accent);margin-left:0.5rem">${prediction.points_awarded} p</span>` : ""}</span>`
+                 ${prediction.points_awarded !== null ? `<span style="color:var(--accent);margin-left:0.5rem">${prediction.points_awarded} p</span>` : ""}</span>`
               : `<span style="color:var(--text-muted)">Ingen tipping</span>`
             : prediction
               ? `<div style="display:flex;align-items:center;gap:0.5rem">
-                    <div class="prediction-inputs">
-                        <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
-                        <span style="color:var(--text-muted)">-</span>
-                        <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
-                    </div>
-                    <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
-                   </div>`
+                  <div class="prediction-inputs">
+                      <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
+                      <span style="color:var(--text-muted)">-</span>
+                      <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
+                  </div>
+                  <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
+                 </div>`
               : `<div style="display:flex;align-items:center;gap:0.5rem">
-                    <div class="prediction-inputs">
-                        <input type="number" id="home-${m.id}" value="0" min="0" max="20">
-                        <span style="color:var(--text-muted)">-</span>
-                        <input type="number" id="away-${m.id}" value="0" min="0" max="20">
-                    </div>
-                    <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Tipp</button>
-                   </div>`
+                  <div class="prediction-inputs">
+                      <input type="number" id="home-${m.id}" value="0" min="0" max="20">
+                      <span style="color:var(--text-muted)">-</span>
+                      <input type="number" id="away-${m.id}" value="0" min="0" max="20">
+                  </div>
+                  <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Tipp</button>
+                 </div>`
         }
     </div>
     <div id="match-history-${m.id}"></div>
@@ -232,6 +232,8 @@ async function loadPredictions() {
 
 // Season prediction
 let dragSrcIndex = null;
+let touchDragIndex = null;
+let touchClone = null;
 
 function renderSeasonStandings(teams) {
   const list = document.getElementById("season-standings-list");
@@ -244,7 +246,7 @@ function renderSeasonStandings(teams) {
         ondragleave="dragLeave(event)"
         ondrop="drop(event, ${i})"
         ondragend="dragEnd(event)"
-        style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:grab;transition:all 0.15s ease">
+        style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:grab;transition:all 0.15s ease;touch-action:none;">
         <span style="color:var(--accent);font-weight:700;min-width:24px">${i + 1}</span>
         <span style="flex:1;font-weight:500">${team}</span>
         <span style="color:var(--text-muted);font-size:1rem">⠿</span>
@@ -252,8 +254,17 @@ function renderSeasonStandings(teams) {
   `,
     )
     .join("");
+
+  // Add touch events after rendering
+  teams.forEach((_, i) => {
+    const el = document.getElementById(`team-${i}`);
+    el.addEventListener("touchstart", touchStart, { passive: false });
+    el.addEventListener("touchmove", touchMove, { passive: false });
+    el.addEventListener("touchend", touchEnd, { passive: false });
+  });
 }
 
+// Desktop drag events
 function dragStart(event, index) {
   dragSrcIndex = index;
   event.dataTransfer.effectAllowed = "move";
@@ -278,8 +289,11 @@ function dragOver(event, index) {
 }
 
 function dragLeave(event) {
-  event.target.closest("[draggable]").style.borderColor = "var(--border)";
-  event.target.closest("[draggable]").style.transform = "scale(1)";
+  const draggable = event.target.closest("[draggable]");
+  if (draggable) {
+    draggable.style.borderColor = "var(--border)";
+    draggable.style.transform = "scale(1)";
+  }
 }
 
 function dragEnd(event) {
@@ -293,11 +307,88 @@ function dragEnd(event) {
 function drop(event, index) {
   event.preventDefault();
   if (dragSrcIndex === null || dragSrcIndex === index) return;
-
   const moved = seasonTeams.splice(dragSrcIndex, 1)[0];
   seasonTeams.splice(index, 0, moved);
   dragSrcIndex = null;
   renderSeasonStandings(seasonTeams);
+}
+
+// Touch drag events
+function touchStart(event) {
+  const el = event.currentTarget;
+  touchDragIndex = parseInt(el.id.replace("team-", ""));
+
+  // Create a visual clone to follow the finger
+  touchClone = el.cloneNode(true);
+  touchClone.style.position = "fixed";
+  touchClone.style.zIndex = "1000";
+  touchClone.style.opacity = "0.85";
+  touchClone.style.pointerEvents = "none";
+  touchClone.style.width = el.offsetWidth + "px";
+  touchClone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4)";
+  touchClone.style.borderColor = "var(--accent)";
+  document.body.appendChild(touchClone);
+
+  el.style.opacity = "0.4";
+
+  const touch = event.touches[0];
+  touchClone.style.left = touch.clientX - el.offsetWidth / 2 + "px";
+  touchClone.style.top = touch.clientY - el.offsetHeight / 2 + "px";
+
+  event.preventDefault();
+}
+
+function touchMove(event) {
+  event.preventDefault();
+  if (touchClone === null) return;
+
+  const touch = event.touches[0];
+  const el = document.getElementById(`team-${touchDragIndex}`);
+  touchClone.style.left = touch.clientX - el.offsetWidth / 2 + "px";
+  touchClone.style.top = touch.clientY - el.offsetHeight / 2 + "px";
+
+  // Highlight the item under the finger
+  document.querySelectorAll('[id^="team-"]').forEach((el) => {
+    el.style.borderColor = "var(--border)";
+    el.style.transform = "scale(1)";
+  });
+
+  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  const teamBelow = elementBelow?.closest('[id^="team-"]');
+  if (teamBelow && teamBelow.id !== `team-${touchDragIndex}`) {
+    teamBelow.style.borderColor = "var(--accent)";
+    teamBelow.style.transform = "scale(1.02)";
+  }
+}
+
+function touchEnd(event) {
+  if (touchClone) {
+    touchClone.remove();
+    touchClone = null;
+  }
+
+  document.querySelectorAll('[id^="team-"]').forEach((el) => {
+    el.style.opacity = "1";
+    el.style.borderColor = "var(--border)";
+    el.style.transform = "scale(1)";
+  });
+
+  if (touchDragIndex === null) return;
+
+  const touch = event.changedTouches[0];
+  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  const teamBelow = elementBelow?.closest('[id^="team-"]');
+
+  if (teamBelow) {
+    const dropIndex = parseInt(teamBelow.id.replace("team-", ""));
+    if (dropIndex !== touchDragIndex) {
+      const moved = seasonTeams.splice(touchDragIndex, 1)[0];
+      seasonTeams.splice(dropIndex, 0, moved);
+      renderSeasonStandings(seasonTeams);
+    }
+  }
+
+  touchDragIndex = null;
 }
 
 async function loadSeasonPrediction() {

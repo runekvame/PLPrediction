@@ -20,7 +20,7 @@ body {
   background-color: var(--bg);
   background-image:
     linear-gradient(rgba(15, 17, 23, 0.7), rgba(15, 17, 23, 0.7)),
-    url("../images/Background.png");
+    url("../images/Background2.png");
 
   background-size: cover;
   background-position: center 30%;
@@ -33,7 +33,7 @@ body {
   body {
     background-image:
       linear-gradient(rgba(15, 17, 23, 0.7), rgba(15, 17, 23, 0.7)),
-      url("../images/BackgroundMobile.png");
+      url("../images/BackgroundMobile2.png");
   }
 }
 
@@ -417,8 +417,8 @@ button.danger {
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(74, 222, 128, 0.3);
-  border-top-color: var(--accent);
+  border: 2px solid rgba(15, 17, 23, 0.4);
+  border-top-color: #0f1117;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-right: 0.5rem;
