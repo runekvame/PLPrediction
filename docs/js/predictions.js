@@ -354,30 +354,42 @@ function touchMove(event) {
   const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
   touchClone.style.display = "";
 
+  if (!elementBelow) return;
+
+  // Walk up the DOM to find a team div
+  let teamBelow = null;
+  let node = elementBelow;
+  while (node && node !== document.body) {
+    if (node.id && node.id.match(/^team-\d+$/)) {
+      teamBelow = node;
+      break;
+    }
+    node = node.parentElement;
+  }
+
   document.querySelectorAll('[id^="team-"]').forEach((el) => {
     el.style.borderColor = "var(--border)";
   });
 
-  const teamBelow = elementBelow?.closest('[id^="team-"]');
-  if (teamBelow && teamBelow.id !== `team-${touchDragIndex}`) {
-    teamBelow.style.borderColor = "var(--accent)";
+  if (!teamBelow || teamBelow.id === `team-${touchDragIndex}`) return;
 
-    const list = document.getElementById("season-standings-list");
-    const belowIndex = parseInt(teamBelow.id.replace("team-", ""));
-    const dragEl2 = document.getElementById(`team-${touchDragIndex}`);
+  teamBelow.style.borderColor = "var(--accent)";
 
-    if (belowIndex > touchDragIndex) {
-      list.insertBefore(dragEl2, teamBelow.nextSibling);
-    } else {
-      list.insertBefore(dragEl2, teamBelow);
-    }
+  const list = document.getElementById("season-standings-list");
+  const belowIndex = parseInt(teamBelow.id.replace("team-", ""));
+  const dragEl2 = document.getElementById(`team-${touchDragIndex}`);
 
-    const moved = seasonTeams.splice(touchDragIndex, 1)[0];
-    seasonTeams.splice(belowIndex, 0, moved);
-    touchDragIndex = belowIndex;
-
-    updatePositionNumbers();
+  if (belowIndex > touchDragIndex) {
+    list.insertBefore(dragEl2, teamBelow.nextSibling);
+  } else {
+    list.insertBefore(dragEl2, teamBelow);
   }
+
+  const moved = seasonTeams.splice(touchDragIndex, 1)[0];
+  seasonTeams.splice(belowIndex, 0, moved);
+  touchDragIndex = belowIndex;
+
+  updatePositionNumbers();
 }
 
 function touchEnd(event) {
