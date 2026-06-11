@@ -25,12 +25,10 @@ namespace PLPrediction.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitPrediction(SubmitPredictionDTO dto, [FromHeader] string authorization)
         {
-            // Get user from token
             var token = authorization.Replace("Bearer ", "");
             var user = await _supabase.Auth.GetUser(token);
             if (user == null) return Unauthorized("Invalid token");
 
-            // Check match kickoff time
             _http.DefaultRequestHeaders.Clear();
             _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
             _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
@@ -41,10 +39,6 @@ namespace PLPrediction.Controllers
 
             if (matches.GetArrayLength() == 0) return NotFound("Match not found");
 
-           // var kickoff = matches[0].GetProperty("kickoff_time").GetDateTime();
-            //if (DateTime.UtcNow >= kickoff) return BadRequest("Prediction deadline has passed");
-
-            // Save prediction
             var body = JsonSerializer.Serialize(new
             {
                 user_id = user.Id,
@@ -54,13 +48,13 @@ namespace PLPrediction.Controllers
             });
 
             var res = await _http.PostAsync($"{_supabaseUrl}/rest/v1/predictions",
-    new StringContent(body, Encoding.UTF8, "application/json"));
+                new StringContent(body, Encoding.UTF8, "application/json"));
 
-if (!res.IsSuccessStatusCode)
-{
-    var error = await res.Content.ReadAsStringAsync();
-    return BadRequest($"Failed to save prediction: {error}");
-}
+            if (!res.IsSuccessStatusCode)
+            {
+                var error = await res.Content.ReadAsStringAsync();
+                return BadRequest($"Failed to save prediction: {error}");
+            }
 
             return Ok(new { message = "Prediction submitted successfully" });
         }
@@ -76,6 +70,20 @@ if (!res.IsSuccessStatusCode)
             var json = await res.Content.ReadAsStringAsync();
 
             return Ok(JsonDocument.Parse(json).RootElement);
+        }
+
+        [HttpGet("match/{matchId}")]
+        public async Task<IActionResult> GetMatchPredictions(string matchId)
+        {
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var res = await _http.GetAsync(
+                $"{_supabaseUrl}/rest/v1/predictions?match_id=eq.{matchId}&select=*,users(username)&order=points_awarded.desc");
+            var json = await res.Content.ReadAsStringAsync();
+
+            return Content(json, "application/json");
         }
     }
 }

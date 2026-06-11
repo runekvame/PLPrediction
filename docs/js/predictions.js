@@ -363,10 +363,6 @@ async function loadMatchPredictions(
   homeScore,
   awayScore,
 ) {
-  const supabaseUrl = "https://fvzccuhpckmoaurhxfzy.supabase.co";
-  const supabaseKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2emNjdWhwY2ttb2F1cmh4Znp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTQ0MDgsImV4cCI6MjA5NDYzMDQwOH0.lUV1tXVGoh8vRN0QziUPycqN_rSet-HNRr-YkeNVPKQ";
-
   const existing = document.getElementById(`history-${matchId}`);
   if (existing) {
     existing.style.display =
@@ -374,15 +370,9 @@ async function loadMatchPredictions(
     return;
   }
 
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/predictions?match_id=eq.${matchId}&select=*,users(username)&order=points_awarded.desc`,
-    {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-      },
-    },
-  );
+  const res = await fetch(`${API_URL}/Predictions/match/${matchId}`, {
+    headers: getHeaders(),
+  });
   const predictions = await res.json();
 
   const container = document.getElementById(`match-history-${matchId}`);
