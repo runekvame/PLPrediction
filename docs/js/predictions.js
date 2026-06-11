@@ -12,6 +12,7 @@ let allMatches = [];
 let userPredictions = [];
 let currentGameweek = 1;
 let seasonTeams = [];
+let selectedTeamIndex = null;
 
 const PL_TEAMS = [
   "Arsenal FC",
@@ -230,188 +231,46 @@ async function loadPredictions() {
   userPredictions = await getUserPredictions(userId);
 }
 
-// // Season prediction
-let dragSrcIndex = null;
-let touchDragIndex = null;
-let touchClone = null;
-let longPressTimer = null;
-
+// Season prediction
 function renderSeasonStandings(teams) {
   const list = document.getElementById("season-standings-list");
   list.innerHTML = teams
     .map(
       (team, i) => `
-    <div id="team-${i}" draggable="true"
-        ondragstart="dragStart(event, ${i})"
-        ondragover="dragOver(event, ${i})"
-        ondragleave="dragLeave(event)"
-        ondrop="drop(event, ${i})"
-        ondragend="dragEnd(event)"
-        style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:grab;transition:all 0.15s ease;touch-action:none;">
+    <div id="team-${i}"
+        onclick="selectOrSwap(${i})"
+        style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s ease;">
         <span style="color:var(--accent);font-weight:700;min-width:24px">${i + 1}</span>
         <span style="flex:1;font-weight:500">${team}</span>
-        <span style="color:var(--text-muted);font-size:1rem">⠿</span>
+        <span style="color:var(--text-muted);font-size:1rem">⇅</span>
     </div>
   `,
     )
     .join("");
-
-  teams.forEach((_, i) => {
-    const el = document.getElementById(`team-${i}`);
-    el.addEventListener("touchstart", touchStart, { passive: false });
-    el.addEventListener("touchmove", touchMove, { passive: false });
-    el.addEventListener("touchend", touchEnd, { passive: false });
-  });
 }
 
-function updatePositionNumbers() {
-  document.querySelectorAll('[id^="team-"]').forEach((el, i) => {
-    el.querySelector("span:first-child").textContent = i + 1;
-  });
-}
-
-function dragStart(event, index) {
-  dragSrcIndex = index;
-  event.dataTransfer.effectAllowed = "move";
-  event.dataTransfer.setData("text/plain", index);
-  setTimeout(() => {
-    document.getElementById(`team-${index}`).style.opacity = "0.4";
-  }, 0);
-}
-
-function dragOver(event, index) {
-  event.preventDefault();
-  event.dataTransfer.dropEffect = "move";
-  document.querySelectorAll('[id^="team-"]').forEach((el) => {
+function selectOrSwap(index) {
+  if (selectedTeamIndex === null) {
+    selectedTeamIndex = index;
+    const el = document.getElementById(`team-${index}`);
+    el.style.borderColor = "var(--accent)";
+    el.style.background = "rgba(74,222,128,0.1)";
+  } else if (selectedTeamIndex === index) {
+    const el = document.getElementById(`team-${index}`);
     el.style.borderColor = "var(--border)";
-    el.style.transform = "scale(1)";
-  });
-  const target = document.getElementById(`team-${index}`);
-  if (target && dragSrcIndex !== index) {
-    target.style.borderColor = "var(--accent)";
-    target.style.transform = "scale(1.02)";
-  }
-}
-
-function dragLeave(event) {
-  const draggable = event.target.closest("[draggable]");
-  if (draggable) {
-    draggable.style.borderColor = "var(--border)";
-    draggable.style.transform = "scale(1)";
-  }
-}
-
-function dragEnd(event) {
-  document.querySelectorAll('[id^="team-"]').forEach((el) => {
-    el.style.opacity = "1";
-    el.style.borderColor = "var(--border)";
-    el.style.transform = "scale(1)";
-  });
-}
-
-function drop(event, index) {
-  event.preventDefault();
-  if (dragSrcIndex === null || dragSrcIndex === index) return;
-  const moved = seasonTeams.splice(dragSrcIndex, 1)[0];
-  seasonTeams.splice(index, 0, moved);
-  dragSrcIndex = null;
-  renderSeasonStandings(seasonTeams);
-}
-
-function touchStart(event) {
-  const el = event.currentTarget;
-  const index = parseInt(el.id.replace("team-", ""));
-
-  // Long press delay before drag activates
-  longPressTimer = setTimeout(() => {
-    touchDragIndex = index;
-
-    touchClone = el.cloneNode(true);
-    touchClone.style.position = "fixed";
-    touchClone.style.zIndex = "1000";
-    touchClone.style.opacity = "0.9";
-    touchClone.style.pointerEvents = "none";
-    touchClone.style.width = el.offsetWidth + "px";
-    touchClone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.4)";
-    touchClone.style.borderColor = "var(--accent)";
-    touchClone.style.transition = "none";
-    document.body.appendChild(touchClone);
-
-    const touch = event.touches[0];
-    touchClone.style.left = touch.clientX - el.offsetWidth / 2 + "px";
-    touchClone.style.top = touch.clientY - el.offsetHeight / 2 + "px";
-
-    el.style.opacity = "0.3";
-  }, 300);
-
-  event.preventDefault();
-}
-
-function touchMove(event) {
-  clearTimeout(longPressTimer);
-  if (touchClone === null) return;
-
-  const touch = event.touches[0];
-  const dragEl = document.getElementById(`team-${touchDragIndex}`);
-  touchClone.style.left = touch.clientX - dragEl.offsetWidth / 2 + "px";
-  touchClone.style.top = touch.clientY - dragEl.offsetHeight / 2 + "px";
-
-  touchClone.style.display = "none";
-  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-  touchClone.style.display = "";
-
-  if (!elementBelow) return;
-
-  // Walk up the DOM to find a team div
-  let teamBelow = null;
-  let node = elementBelow;
-  while (node && node !== document.body) {
-    if (node.id && node.id.match(/^team-\d+$/)) {
-      teamBelow = node;
-      break;
-    }
-    node = node.parentElement;
-  }
-
-  document.querySelectorAll('[id^="team-"]').forEach((el) => {
-    el.style.borderColor = "var(--border)";
-  });
-
-  if (!teamBelow || teamBelow.id === `team-${touchDragIndex}`) return;
-
-  teamBelow.style.borderColor = "var(--accent)";
-
-  const list = document.getElementById("season-standings-list");
-  const belowIndex = parseInt(teamBelow.id.replace("team-", ""));
-  const dragEl2 = document.getElementById(`team-${touchDragIndex}`);
-
-  if (belowIndex > touchDragIndex) {
-    list.insertBefore(dragEl2, teamBelow.nextSibling);
+    el.style.background = "var(--bg-input)";
+    selectedTeamIndex = null;
   } else {
-    list.insertBefore(dragEl2, teamBelow);
+    const a = selectedTeamIndex;
+    const b = index;
+
+    const temp = seasonTeams[a];
+    seasonTeams[a] = seasonTeams[b];
+    seasonTeams[b] = temp;
+
+    selectedTeamIndex = null;
+    renderSeasonStandings(seasonTeams);
   }
-
-  const moved = seasonTeams.splice(touchDragIndex, 1)[0];
-  seasonTeams.splice(belowIndex, 0, moved);
-  touchDragIndex = belowIndex;
-
-  updatePositionNumbers();
-}
-
-function touchEnd(event) {
-  clearTimeout(longPressTimer);
-  if (touchClone) {
-    touchClone.remove();
-    touchClone = null;
-  }
-
-  document.querySelectorAll('[id^="team-"]').forEach((el) => {
-    el.style.opacity = "1";
-    el.style.borderColor = "var(--border)";
-    el.style.transform = "scale(1)";
-  });
-
-  touchDragIndex = null;
 }
 
 async function loadSeasonPrediction() {
@@ -604,8 +463,4 @@ window.switchTab = switchTab;
 window.savePrediction = savePrediction;
 window.selectGameweek = selectGameweek;
 window.saveSeasonPrediction = saveSeasonPrediction;
-window.dragStart = dragStart;
-window.dragOver = dragOver;
-window.dragLeave = dragLeave;
-window.dragEnd = dragEnd;
-window.drop = drop;
+window.selectOrSwap = selectOrSwap;
