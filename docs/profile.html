@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLPrediction - Profil</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <nav>
+      <a href="home.html" class="logo">PLPrediction</a>
+      <button class="nav-hamburger" onclick="toggleNav()">☰</button>
+      <ul id="nav-menu">
+        <li><a href="home.html">Hjem</a></li>
+        <li><a href="predictions.html">Tippinger</a></li>
+        <li><a href="leaderboard.html">Tabell</a></li>
+        <li>
+          <a href="admin.html" id="admin-link" style="display: none">Admin</a>
+        </li>
+      </ul>
+      <div class="nav-right">
+        <div class="nav-avatar">
+          <button
+            class="nav-avatar-btn"
+            id="avatar-btn"
+            onclick="toggleDropdown()"
+          >
+            ?
+          </button>
+          <div class="nav-dropdown" id="nav-dropdown">
+            <div class="nav-dropdown-header" id="dropdown-username">
+              Laster...
+            </div>
+            <button class="nav-dropdown-item danger" onclick="logout()">
+              Logg ut
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <div class="page-header">
+        <h1>Profil</h1>
+        <p>Administrer profilbildet ditt</p>
+      </div>
+
+      <div class="card" style="max-width: 480px; margin: 0 auto">
+        <!-- Avatar display -->
+        <div class="profile-avatar-section">
+          <div class="profile-avatar-wrapper" id="avatar-wrapper">
+            <div class="profile-avatar-container">
+              <div
+                class="skeleton profile-avatar-skeleton"
+                id="avatar-skeleton"
+              ></div>
+              <img
+                id="profile-avatar-img"
+                class="profile-avatar-img"
+                src=""
+                alt="Profilbilde"
+                style="display: none"
+              />
+              <div
+                class="profile-avatar-initials"
+                id="profile-avatar-initials"
+                style="display: none"
+              ></div>
+            </div>
+            <button
+              class="profile-avatar-edit-btn"
+              id="avatar-edit-btn"
+              onclick="document.getElementById('avatar-file-input').click()"
+              title="Endre profilbilde"
+            >
+              ✏️
+            </button>
+          </div>
+          <div class="profile-username" id="profile-username">
+            <div
+              class="skeleton skeleton-text"
+              style="width: 120px; height: 1.4rem; margin: 0 auto"
+            ></div>
+          </div>
+          <div class="profile-points" id="profile-points" style="display: none">
+            <span id="profile-points-value"></span> poeng totalt
+          </div>
+        </div>
+
+        <!-- Hidden file input -->
+        <input
+          type="file"
+          id="avatar-file-input"
+          accept="image/*"
+          style="display: none"
+          onchange="handleAvatarSelect(event)"
+        />
+
+        <!-- Crop preview (shown after selecting image) -->
+        <div id="crop-section" style="display: none">
+          <div class="profile-section-label">Forhåndsvisning</div>
+          <div class="profile-crop-preview-row">
+            <div class="profile-crop-preview-box">
+              <canvas
+                id="crop-canvas"
+                width="400"
+                height="400"
+                style="display: none"
+              ></canvas>
+              <img
+                id="crop-preview"
+                class="profile-crop-preview-img"
+                src=""
+                alt=""
+              />
+            </div>
+            <div class="profile-crop-preview-sizes">
+              <div class="profile-crop-size-label">Stor</div>
+              <img
+                id="preview-large"
+                class="profile-preview-circle preview-large"
+                src=""
+                alt=""
+              />
+              <div class="profile-crop-size-label" style="margin-top: 0.75rem">
+                Liten
+              </div>
+              <img
+                id="preview-small"
+                class="profile-preview-circle preview-small"
+                src=""
+                alt=""
+              />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem">
+            <button
+              class="btn btn-secondary"
+              onclick="cancelUpload()"
+              style="flex: 1"
+            >
+              Avbryt
+            </button>
+            <button
+              class="btn btn-primary"
+              id="upload-btn"
+              onclick="uploadAvatar()"
+              style="flex: 1"
+            >
+              <span id="upload-btn-text">Last opp</span>
+              <span id="upload-spinner" style="display: none">⏳</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- No crop section — just the edit button hint -->
+        <div
+          id="no-crop-section"
+          style="text-align: center; margin-top: 1.25rem"
+        >
+          <button
+            class="btn btn-secondary"
+            onclick="document.getElementById('avatar-file-input').click()"
+          >
+            📷 Endre profilbilde
+          </button>
+          <p
+            style="
+              color: var(--text-muted);
+              font-size: 0.8rem;
+              margin-top: 0.6rem;
+            "
+          >
+            Bildet blir automatisk beskåret til kvadrat og skalert til 400×400
+            px
+          </p>
+        </div>
+
+        <!-- Status message -->
+        <div
+          id="upload-status"
+          style="
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+          "
+        ></div>
+      </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/profile.js"></script>
+  </body>
+</html>

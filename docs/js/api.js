@@ -155,3 +155,36 @@ async function updateSetting(key, value) {
   });
   return res.json();
 }
+
+// ── ADDITIONS TO api.js ─────────────────────────────────────────────────────
+// Append these two functions to the bottom of your existing api.js
+
+async function getProfile() {
+  const res = await fetch(`${API_URL}/Profile`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) return {};
+  return res.json();
+}
+
+async function uploadAvatarApi(blob) {
+  try {
+    const res = await fetch(`${API_URL}/Profile/avatar`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${getToken()}`,
+        "Content-Type": "image/png",
+      },
+      body: blob,
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      return { error: text || "Opplasting feilet" };
+    }
+
+    return res.json();
+  } catch (err) {
+    return { error: "Nettverksfeil" };
+  }
+}

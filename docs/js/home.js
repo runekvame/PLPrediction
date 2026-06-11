@@ -22,7 +22,6 @@ function toggleDropdown() {
   dropdown.classList.toggle("open");
 }
 
-// Close dropdown when clicking outside
 document.addEventListener("click", function (e) {
   const avatar = document.querySelector(".nav-avatar");
   if (avatar && !avatar.contains(e.target)) {
@@ -94,6 +93,20 @@ function renderRecentMatches(matches) {
     .join("");
 }
 
+function podiumAvatarContent(player, rank) {
+  // Returns either an <img> (photo) or the text initial, matching the
+  // existing .podium-avatar size for each rank (first=68px, others=56px)
+  if (!player) return { 1: "🥇", 2: "🥈", 3: "🥉" }[rank];
+
+  if (player.avatar_url) {
+    const size = rank === 1 ? "68px" : "56px";
+    return `<img src="${player.avatar_url}" alt="${player.username}"
+              style="width:${size};height:${size};object-fit:cover;border-radius:50%;display:block;" />`;
+  }
+
+  return (player.username || "?")[0].toUpperCase();
+}
+
 function renderPodium(players) {
   const podium = document.getElementById("podium");
   if (!players || players.length === 0) {
@@ -121,10 +134,9 @@ function renderPodium(players) {
         </div>`;
     }
 
-    const initial = (player.username || "?")[0].toUpperCase();
     return `
       <div class="podium-place ${classes[rank]}">
-          <div class="podium-avatar">${initial}</div>
+          <div class="podium-avatar">${podiumAvatarContent(player, rank)}</div>
           <div class="podium-name">${player.username || "Ukjent"}</div>
           <div class="podium-points">${player.total_points ?? 0} p</div>
           <div class="podium-block">${medals[rank]}</div>

@@ -22,7 +22,6 @@ function toggleDropdown() {
   dropdown.classList.toggle("open");
 }
 
-// Close dropdown when clicking outside
 document.addEventListener("click", function (e) {
   const avatar = document.querySelector(".nav-avatar");
   if (avatar && !avatar.contains(e.target)) {
@@ -32,11 +31,33 @@ document.addEventListener("click", function (e) {
 
 window.toggleDropdown = toggleDropdown;
 
+// Renders a 32px round avatar — photo if available, initial if not.
+// Colours match the nav-avatar-btn style already in your CSS.
+function leaderboardAvatar(player) {
+  const name = player.username || player.users?.username || "?";
+  const initial = name[0].toUpperCase();
+  const avatarUrl = player.avatar_url || player.users?.avatar_url || null;
+
+  if (avatarUrl) {
+    return `<img src="${avatarUrl}" alt="${name}"
+              style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:block;" />`;
+  }
+
+  return `<div style="
+      width:32px;height:32px;border-radius:50%;
+      background:var(--bg-input);border:2px solid var(--accent);
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.8rem;font-weight:700;color:var(--accent);
+      flex-shrink:0;">
+    ${initial}
+  </div>`;
+}
+
 function renderLeaderboard(players, bodyId) {
   const body = document.getElementById(bodyId);
   if (!players || players.length === 0) {
     body.innerHTML =
-      '<tr><td colspan="3" style="color:var(--text-muted)">Ingen data</td></tr>';
+      '<tr><td colspan="4" style="color:var(--text-muted)">Ingen data</td></tr>';
     return;
   }
 
@@ -47,6 +68,7 @@ function renderLeaderboard(players, bodyId) {
       (p, i) => `
         <tr style="${p.user_id === currentUserId ? "background:rgba(74,222,128,0.05)" : ""}">
             <td class="rank">${i + 1}</td>
+            <td style="width:40px;padding-right:0;">${leaderboardAvatar(p)}</td>
             <td style="font-weight:${p.user_id === currentUserId ? "700" : "400"}">${p.username || p.users?.username || "-"}</td>
             <td class="points" style="text-align:right">${p.total_points ?? p.points ?? 0}</td>
         </tr>
@@ -56,7 +78,6 @@ function renderLeaderboard(players, bodyId) {
 }
 
 async function loadGameweekLeaderboard(gw) {
-  // Update button styles
   document.querySelectorAll("#gw-buttons button").forEach((btn) => {
     btn.className = btn.dataset.gw == gw ? "" : "secondary";
   });
@@ -137,11 +158,9 @@ window.toggleNav = toggleNav;
 window.togglePrediction = togglePrediction;
 
 async function loadPage() {
-  // Season leaderboard
   const season = await getLeaderboard();
   renderLeaderboard(season, "leaderboard-body");
 
-  // Gameweek buttons
   const matches = await getMatchesFromDB();
   const gameweeks = [...new Set(matches.map((m) => m.gameweek))].sort(
     (a, b) => a - b,
@@ -159,8 +178,8 @@ async function loadPage() {
       const badgeText = isTriple ? "3x" : "2x";
       return `
       <div style="position:relative;display:inline-block">
-          <button 
-              class="secondary" 
+          <button
+              class="secondary"
               data-gw="${gw}"
               onclick="loadGameweekLeaderboard(${gw})"
               style="padding:0.4rem 0.8rem;font-size:0.85rem">
@@ -172,13 +191,11 @@ async function loadPage() {
     })
     .join("");
 
-  // Show admin link if admin
   const adminStatus = await isAdmin();
   if (adminStatus) {
     document.getElementById("admin-link").style.display = "block";
   }
 
-  // Load season predictions if visible
   const settings = await getSettings();
   if (Array.isArray(settings)) {
     const visibleSetting = settings.find(
