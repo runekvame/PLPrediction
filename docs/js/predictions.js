@@ -10,9 +10,27 @@ function logout() {
 
 const username = localStorage.getItem("username");
 if (username) {
-  const el = document.querySelector(".nav-username");
-  if (el) el.textContent = username;
+  const initial = username[0].toUpperCase();
+  const btn = document.getElementById("avatar-btn");
+  const header = document.getElementById("dropdown-username");
+  if (btn) btn.textContent = initial;
+  if (header) header.textContent = username;
 }
+
+function toggleDropdown() {
+  const dropdown = document.getElementById("nav-dropdown");
+  dropdown.classList.toggle("open");
+}
+
+// Close dropdown when clicking outside
+document.addEventListener("click", function (e) {
+  const avatar = document.querySelector(".nav-avatar");
+  if (avatar && !avatar.contains(e.target)) {
+    document.getElementById("nav-dropdown")?.classList.remove("open");
+  }
+});
+
+window.toggleDropdown = toggleDropdown;
 
 let allMatches = [];
 let userPredictions = [];

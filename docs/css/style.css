@@ -769,3 +769,84 @@ button:disabled {
   width: 100%;
   border-radius: 12px 12px 0 0;
 }
+
+/* Avatar dropdown */
+.nav-avatar {
+  position: relative;
+}
+
+.nav-avatar-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(74, 222, 128, 0.15);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.nav-avatar-btn:hover {
+  background: rgba(74, 222, 128, 0.25);
+}
+
+.nav-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 180px;
+  z-index: 200;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.nav-dropdown.open {
+  display: block;
+}
+
+.nav-dropdown-header {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.nav-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 0;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--bg-input);
+  color: var(--text);
+}
+
+.nav-dropdown-item.danger {
+  color: var(--danger);
+  background: none;
+}
+
+.nav-dropdown-item.danger:hover {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--danger);
+}

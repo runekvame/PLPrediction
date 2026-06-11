@@ -11,16 +11,31 @@
       <a href="home.html" class="logo">PLPrediction</a>
       <button class="nav-hamburger" onclick="toggleNav()">☰</button>
       <ul id="nav-menu">
-        <li><a href="home.html">Hjem</a></li>
-        <li><a href="predictions.html" class="active">Tippinger</a></li>
+        <li><a href="home.html" class="active">Hjem</a></li>
+        <li><a href="predictions.html">Tippinger</a></li>
         <li><a href="leaderboard.html">Tabell</a></li>
         <li>
           <a href="admin.html" id="admin-link" style="display: none">Admin</a>
         </li>
       </ul>
       <div class="nav-right">
-        <span class="nav-username"></span>
-        <button class="secondary" onclick="logout()">Logg ut</button>
+        <div class="nav-avatar">
+          <button
+            class="nav-avatar-btn"
+            id="avatar-btn"
+            onclick="toggleDropdown()"
+          >
+            ?
+          </button>
+          <div class="nav-dropdown" id="nav-dropdown">
+            <div class="nav-dropdown-header" id="dropdown-username">
+              Laster...
+            </div>
+            <button class="nav-dropdown-item danger" onclick="logout()">
+              Logg ut
+            </button>
+          </div>
+        </div>
       </div>
     </nav>
 
