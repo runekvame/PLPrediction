@@ -33,11 +33,37 @@ namespace PLPrediction.Controllers
             _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
             _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
 
-            var matchRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/matches?id=eq.{dto.MatchId}&select=kickoff_time,status");
+            // Get the match to find its gameweek
+            var matchRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/matches?id=eq.{dto.MatchId}&select=kickoff_time,status,gameweek");
             var matchJson = await matchRes.Content.ReadAsStringAsync();
             var matches = JsonDocument.Parse(matchJson).RootElement;
 
             if (matches.GetArrayLength() == 0) return NotFound("Match not found");
+
+            var match = matches[0];
+            var gameweek = match.GetProperty("gameweek").GetInt32();
+
+            // Get the earliest kickoff time in this gameweek
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var gwRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/matches?gameweek=eq.{gameweek}&select=kickoff_time&order=kickoff_time.asc&limit=1");
+            var gwJson = await gwRes.Content.ReadAsStringAsync();
+            var gwMatches = JsonDocument.Parse(gwJson).RootElement;
+
+            if (gwMatches.GetArrayLength() == 0) return NotFound("Gameweek not found");
+
+            var firstKickoff = gwMatches[0].GetProperty("kickoff_time").GetDateTime();
+            var deadline = firstKickoff.AddHours(-2);
+
+            if (DateTime.UtcNow >= deadline)
+                return BadRequest("Fristen for tipping denne spillerunden er utløpt");
+
+            // Save prediction
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
 
             var body = JsonSerializer.Serialize(new
             {

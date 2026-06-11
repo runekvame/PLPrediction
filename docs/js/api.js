@@ -74,12 +74,18 @@ async function getGameweekLeaderboard(gameweek) {
 }
 
 // Season predictions
-async function submitSeasonPrediction(season, predictedStandings) {
-  const res = await fetch(`${API_URL}/SeasonPredictions`, {
+async function submitPrediction(matchId, predictedHome, predictedAway) {
+  const res = await fetch(`${API_URL}/Predictions`, {
     method: "POST",
     headers: getHeaders(),
-    body: JSON.stringify({ season, predictedStandings }),
+    body: JSON.stringify({ matchId, predictedHome, predictedAway }),
   });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    return { error: data || "Kunne ikke lagre tipping" };
+  }
+
   return res.json();
 }
 

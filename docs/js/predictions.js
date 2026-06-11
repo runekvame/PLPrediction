@@ -240,7 +240,8 @@ async function savePrediction(matchId) {
       btn.disabled = false;
       btn.innerHTML = "Tipp";
     }
-    alert("Kunne ikke lagre tipping. Prøv igjen.");
+    const errorMsg = result.error || "Kunne ikke lagre tipping. Prøv igjen.";
+    alert(errorMsg);
   }
 }
 
