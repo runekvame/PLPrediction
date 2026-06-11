@@ -46,14 +46,26 @@ namespace PLPrediction.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO dto)
-        {
-            var response = await _supabase.Auth.SignIn(dto.Email, dto.Password);
+public async Task<IActionResult> Login(LoginDTO dto)
+{
+    var response = await _supabase.Auth.SignIn(dto.Email, dto.Password);
 
-            if (response.User == null)
-                return Unauthorized("Invalid credentials");
+    if (response.User == null)
+        return Unauthorized("Invalid credentials");
 
-            return Ok(new { token = response.AccessToken, userId = response.User.Id });
-        }
+    // Fetch username from users table
+    using var http = new HttpClient();
+    var supabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL")!;
+    var supabaseKey = Environment.GetEnvironmentVariable("SUPABASE_SERVICE_KEY")!;
+    http.DefaultRequestHeaders.Add("apikey", supabaseKey);
+    http.DefaultRequestHeaders.Add("Authorization", $"Bearer {supabaseKey}");
+
+    var userRes = await http.GetAsync($"{supabaseUrl}/rest/v1/users?id=eq.{response.User.Id}&select=username");
+    var userJson = await userRes.Content.ReadAsStringAsync();
+    var users = System.Text.Json.JsonDocument.Parse(userJson).RootElement;
+    var username = users.GetArrayLength() > 0 ? users[0].GetProperty("username").GetString() : "Ukjent";
+
+    return Ok(new { token = response.AccessToken, userId = response.User.Id, username });
+}
     }
 }

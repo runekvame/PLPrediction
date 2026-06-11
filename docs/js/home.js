@@ -8,6 +8,12 @@ function logout() {
   window.location.href = "index.html";
 }
 
+const username = localStorage.getItem("username");
+if (username) {
+  const el = document.querySelector(".nav-username");
+  if (el) el.textContent = username;
+}
+
 function formatDate(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleDateString("nb-NO", {

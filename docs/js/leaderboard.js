@@ -8,6 +8,12 @@ function logout() {
   window.location.href = "index.html";
 }
 
+const username = localStorage.getItem("username");
+if (username) {
+  const el = document.querySelector(".nav-username");
+  if (el) el.textContent = username;
+}
+
 function renderLeaderboard(players, bodyId) {
   const body = document.getElementById(bodyId);
   if (!players || players.length === 0) {

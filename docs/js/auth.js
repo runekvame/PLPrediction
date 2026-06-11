@@ -23,12 +23,17 @@ async function handleLogin() {
   if (result.token) {
     localStorage.setItem("token", result.token);
     localStorage.setItem("userId", result.userId);
+    localStorage.setItem("username", result.username);
     window.location.href = "home.html";
   } else {
     btn.disabled = false;
     btn.innerHTML = "Logg inn";
     showAlert("Feil e-post eller passord");
   }
+}
+
+if (localStorage.getItem("token")) {
+  window.location.href = "home.html";
 }
 
 // Redirect if already logged in

@@ -19,6 +19,12 @@ function logout() {
   window.location.href = "index.html";
 }
 
+const username = localStorage.getItem("username");
+if (username) {
+  const el = document.querySelector(".nav-username");
+  if (el) el.textContent = username;
+}
+
 function showAlert(message, type = "success") {
   const alert = document.getElementById("alert");
   alert.textContent = message;
