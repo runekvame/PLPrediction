@@ -42,19 +42,12 @@ async function loadGameweekLeaderboard(gw) {
 }
 
 async function loadSeasonPredictionsComparison() {
-  const supabaseUrl = "https://fvzccuhpckmoaurhxfzy.supabase.co";
-  const supabaseKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2emNjdWhwY2ttb2F1cmh4Znp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTQ0MDgsImV4cCI6MjA5NDYzMDQwOH0.lUV1tXVGoh8vRN0QziUPycqN_rSet-HNRr-YkeNVPKQ";
+  const res = await fetch(`${API_URL}/SeasonPredictions?season=2026-27`, {
+    headers: getHeaders(),
+  });
 
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/season_predictions?season=eq.2026-27&select=*,users(username)`,
-    {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-      },
-    },
-  );
+  if (!res.ok) return;
+
   const predictions = await res.json();
   if (!predictions || predictions.length === 0) return;
 
