@@ -35,3 +35,8 @@ async function handleLogin() {
 if (localStorage.getItem("token")) {
   window.location.href = "home.html";
 }
+
+// Redirect if already logged in
+if (localStorage.getItem("token")) {
+  window.location.href = "home.html";
+}

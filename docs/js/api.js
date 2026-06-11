@@ -13,12 +13,21 @@ function getHeaders() {
 
 // Auth
 async function login(email, password) {
-  const res = await fetch(`${API_URL}/Auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${API_URL}/Auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      return { error: "Invalid credentials" };
+    }
+
+    return res.json();
+  } catch (err) {
+    return { error: "Network error" };
+  }
 }
 
 async function register(email, password, username) {
