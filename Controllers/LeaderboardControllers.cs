@@ -43,5 +43,18 @@ namespace PLPrediction.Controllers
 
             return Ok(JsonDocument.Parse(json).RootElement);
         }
+
+        [HttpGet("gameweek/all")]
+        public async Task<IActionResult> GetAllGameweekScores()
+        {
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var res = await _http.GetAsync($"{_supabaseUrl}/rest/v1/gameweek_scores?select=*&order=gameweek.asc");
+            var json = await res.Content.ReadAsStringAsync();
+
+            return Content(json, "application/json");
+        }
     }
 }

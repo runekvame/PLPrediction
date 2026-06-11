@@ -59,6 +59,41 @@ namespace PLPrediction.Controllers
             return Ok(new { message = "Prediction submitted successfully" });
         }
 
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllPredictions([FromHeader] string authorization)
+        {
+            try
+            {
+                var token = authorization.Replace("Bearer ", "");
+                var adminUser = await _supabase.Auth.GetUser(token);
+                if (adminUser == null) return Unauthorized();
+
+                _http.DefaultRequestHeaders.Clear();
+                _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+                _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+                var adminCheck = await _http.GetAsync($"{_supabaseUrl}/rest/v1/users?id=eq.{adminUser.Id}&select=is_admin");
+                var adminJson = await adminCheck.Content.ReadAsStringAsync();
+                var adminData = JsonDocument.Parse(adminJson).RootElement;
+
+                if (adminData.GetArrayLength() == 0 || !adminData[0].GetProperty("is_admin").GetBoolean())
+                    return Unauthorized("Not an admin");
+
+                _http.DefaultRequestHeaders.Clear();
+                _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+                _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+                var res = await _http.GetAsync($"{_supabaseUrl}/rest/v1/predictions?select=*&order=submitted_at.asc");
+                var json = await res.Content.ReadAsStringAsync();
+
+                return Content(json, "application/json");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserPredictions(string userId)
         {

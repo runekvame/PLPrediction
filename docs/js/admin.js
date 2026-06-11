@@ -205,6 +205,67 @@ function toggleNav() {
 }
 window.toggleNav = toggleNav;
 
+async function downloadBackup() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Henter data...';
+
+  try {
+    const [
+      users,
+      matches,
+      predictions,
+      gameweekScores,
+      seasonPredictions,
+      settings,
+    ] = await Promise.all([
+      fetch(`${API_URL}/AdminAuth/users`, { headers: getHeaders() }).then((r) =>
+        r.json(),
+      ),
+      fetch(`${API_URL}/Matches/all`, { headers: getHeaders() }).then((r) =>
+        r.json(),
+      ),
+      fetch(`${API_URL}/Predictions/all`, { headers: getHeaders() }).then((r) =>
+        r.json(),
+      ),
+      fetch(`${API_URL}/Leaderboard/gameweek/all`, {
+        headers: getHeaders(),
+      }).then((r) => r.json()),
+      fetch(`${API_URL}/SeasonPredictions`, { headers: getHeaders() }).then(
+        (r) => r.json(),
+      ),
+      fetch(`${API_URL}/Settings`).then((r) => r.json()),
+    ]);
+
+    const backup = {
+      exported_at: new Date().toISOString(),
+      users,
+      matches,
+      predictions,
+      gameweek_scores: gameweekScores,
+      season_predictions: seasonPredictions,
+      settings,
+    };
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `plprediction-backup-${new Date().toISOString().split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showAlert("Sikkerhetskopi lastet ned!", "success");
+  } catch (err) {
+    showAlert("Kunne ikke laste ned sikkerhetskopi", "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Last ned sikkerhetskopi";
+  }
+}
+
 async function loadPage() {
   await checkAdmin();
   await loadUsers();
