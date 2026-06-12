@@ -24,8 +24,12 @@ document.addEventListener("click", function (e) {
 
 window.toggleDropdown = toggleDropdown;
 
-// Renders a 32px round avatar — photo if available, initial if not.
-// Colours match the nav-avatar-btn style already in your CSS.
+const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
+const TRIPLE_POINTS_GAMEWEEKS = [38];
+
+let gwGridOpen = false;
+let selectedGw = null;
+
 function leaderboardAvatar(player) {
   const name = player.username || player.users?.username || "?";
   const initial = name[0].toUpperCase();
@@ -70,13 +74,78 @@ function renderLeaderboard(players, bodyId) {
     .join("");
 }
 
-async function loadGameweekLeaderboard(gw) {
-  document.querySelectorAll("#gw-buttons button").forEach((btn) => {
-    btn.className = btn.dataset.gw == gw ? "" : "secondary";
-  });
+function toggleGwGrid() {
+  gwGridOpen = !gwGridOpen;
+  const grid = document.getElementById("gw-grid");
+  const arrow = document.getElementById("gw-toggle-arrow");
+  if (grid) grid.style.display = gwGridOpen ? "flex" : "none";
+  if (arrow) arrow.textContent = gwGridOpen ? "▲" : "▼";
+}
 
+function renderGwButtons(gameweeks) {
+  const container = document.getElementById("gw-buttons");
+
+  const isDouble = selectedGw
+    ? DOUBLE_POINTS_GAMEWEEKS.includes(selectedGw)
+    : false;
+  const isTriple = selectedGw
+    ? TRIPLE_POINTS_GAMEWEEKS.includes(selectedGw)
+    : false;
+  const badgeColor = isTriple ? "#a855f7" : "#f87171";
+  const badgeText = isTriple ? "3x" : "2x";
+  const showBadge = selectedGw && (isDouble || isTriple);
+  const label = selectedGw ? `Runde ${selectedGw}` : "Velg spillerunde";
+
+  container.innerHTML = `
+    <div style="margin-bottom:0.75rem;">
+      <div style="position:relative;display:inline-block;">
+        <button
+          onclick="toggleGwGrid()"
+          style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 1rem;font-size:0.95rem;font-weight:600;">
+          ${label}
+          <span id="gw-toggle-arrow" style="font-size:0.75rem;">▼</span>
+        </button>
+        ${showBadge ? `<span style="position:absolute;top:-8px;right:-8px;background:${badgeColor};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${badgeText}</span>` : ""}
+      </div>
+    </div>
+
+    <div id="gw-grid" style="display:${gwGridOpen ? "flex" : "none"};gap:0.5rem;flex-wrap:wrap;">
+      ${gameweeks
+        .map((gw) => {
+          const isD = DOUBLE_POINTS_GAMEWEEKS.includes(gw);
+          const isT = TRIPLE_POINTS_GAMEWEEKS.includes(gw);
+          const isCurrent = gw === selectedGw;
+          const bc = isT ? "#a855f7" : "#f87171";
+          const bt = isT ? "3x" : "2x";
+          return `
+        <div style="position:relative;display:inline-block">
+          <button
+            class="${isCurrent ? "" : "secondary"}"
+            data-gw="${gw}"
+            onclick="selectGw(${gw})"
+            style="padding:0.4rem 0.8rem;font-size:0.85rem">
+            Runde ${gw}
+          </button>
+          ${isD || isT ? `<span style="position:absolute;top:-8px;right:-8px;background:${bc};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${bt}</span>` : ""}
+        </div>`;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+let allGameweeks = [];
+
+async function selectGw(gw) {
+  selectedGw = gw;
+  gwGridOpen = false;
+  renderGwButtons(allGameweeks);
   const data = await getGameweekLeaderboard(gw);
   renderLeaderboard(data, "gw-leaderboard-body");
+}
+
+async function loadGameweekLeaderboard(gw) {
+  await selectGw(gw);
 }
 
 async function loadSeasonPredictionsComparison() {
@@ -147,42 +216,18 @@ function toggleNav() {
   document.getElementById("nav-menu").classList.toggle("open");
 }
 window.toggleNav = toggleNav;
-
 window.togglePrediction = togglePrediction;
+window.toggleGwGrid = toggleGwGrid;
 
 async function loadPage() {
   const season = await getLeaderboard();
   renderLeaderboard(season, "leaderboard-body");
 
   const matches = await getMatchesFromDB();
-  const gameweeks = [...new Set(matches.map((m) => m.gameweek))].sort(
+  allGameweeks = [...new Set(matches.map((m) => m.gameweek))].sort(
     (a, b) => a - b,
   );
-
-  const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
-  const TRIPLE_POINTS_GAMEWEEKS = [38];
-
-  const gwButtons = document.getElementById("gw-buttons");
-  gwButtons.innerHTML = gameweeks
-    .map((gw) => {
-      const isDouble = DOUBLE_POINTS_GAMEWEEKS.includes(gw);
-      const isTriple = TRIPLE_POINTS_GAMEWEEKS.includes(gw);
-      const badgeColor = isTriple ? "#a855f7" : "#f87171";
-      const badgeText = isTriple ? "3x" : "2x";
-      return `
-      <div style="position:relative;display:inline-block">
-          <button
-              class="secondary"
-              data-gw="${gw}"
-              onclick="loadGameweekLeaderboard(${gw})"
-              style="padding:0.4rem 0.8rem;font-size:0.85rem">
-              Runde ${gw}
-          </button>
-          ${isDouble || isTriple ? `<span style="position:absolute;top:-8px;right:-8px;background:${badgeColor};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${badgeText}</span>` : ""}
-      </div>
-    `;
-    })
-    .join("");
+  renderGwButtons(allGameweeks);
 
   const adminStatus = await isAdmin();
   if (adminStatus) {

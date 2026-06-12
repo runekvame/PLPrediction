@@ -29,6 +29,7 @@ let userPredictions = [];
 let currentGameweek = 1;
 let seasonTeams = [];
 let selectedTeamIndex = null;
+let gwGridOpen = false;
 
 const PL_TEAMS = [
   "Arsenal FC",
@@ -94,31 +95,63 @@ function getUserPrediction(matchId) {
 const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
 const TRIPLE_POINTS_GAMEWEEKS = [38];
 
+function toggleGwGrid() {
+  gwGridOpen = !gwGridOpen;
+  const grid = document.getElementById("gw-grid");
+  const arrow = document.getElementById("gw-toggle-arrow");
+  if (grid) grid.style.display = gwGridOpen ? "flex" : "none";
+  if (arrow) arrow.textContent = gwGridOpen ? "▲" : "▼";
+}
+
 function renderGameweekButtons(matches) {
   const gameweeks = [...new Set(matches.map((m) => m.gameweek))].sort(
     (a, b) => a - b,
   );
   const container = document.getElementById("gameweek-buttons");
-  container.innerHTML = gameweeks
-    .map((gw) => {
-      const isDouble = DOUBLE_POINTS_GAMEWEEKS.includes(gw);
-      const isTriple = TRIPLE_POINTS_GAMEWEEKS.includes(gw);
-      const isCurrent = gw === currentGameweek;
-      const badgeColor = isTriple ? "#a855f7" : "#f87171";
-      const badgeText = isTriple ? "3x" : "2x";
-      return `
-      <div style="position:relative;display:inline-block">
-          <button
-              class="${isCurrent ? "" : "secondary"}"
-              onclick="selectGameweek(${gw})"
-              style="padding:0.4rem 0.8rem;font-size:0.85rem">
-              Runde ${gw}
-          </button>
-          ${isDouble || isTriple ? `<span style="position:absolute;top:-8px;right:-8px;background:${badgeColor};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${badgeText}</span>` : ""}
+
+  const isDouble = DOUBLE_POINTS_GAMEWEEKS.includes(currentGameweek);
+  const isTriple = TRIPLE_POINTS_GAMEWEEKS.includes(currentGameweek);
+  const badgeColor = isTriple ? "#a855f7" : "#f87171";
+  const badgeText = isTriple ? "3x" : "2x";
+  const showBadge = isDouble || isTriple;
+
+  container.innerHTML = `
+    <!-- Toggle button showing current gameweek -->
+    <div style="margin-bottom:0.75rem;">
+      <div style="position:relative;display:inline-block;">
+        <button
+          onclick="toggleGwGrid()"
+          style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 1rem;font-size:0.95rem;font-weight:600;">
+          Runde ${currentGameweek}
+          <span id="gw-toggle-arrow" style="font-size:0.75rem;">▼</span>
+        </button>
+        ${showBadge ? `<span style="position:absolute;top:-8px;right:-8px;background:${badgeColor};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${badgeText}</span>` : ""}
       </div>
-    `;
-    })
-    .join("");
+    </div>
+
+    <!-- Collapsible grid -->
+    <div id="gw-grid" style="display:${gwGridOpen ? "flex" : "none"};gap:0.5rem;flex-wrap:wrap;">
+      ${gameweeks
+        .map((gw) => {
+          const isD = DOUBLE_POINTS_GAMEWEEKS.includes(gw);
+          const isT = TRIPLE_POINTS_GAMEWEEKS.includes(gw);
+          const isCurrent = gw === currentGameweek;
+          const bc = isT ? "#a855f7" : "#f87171";
+          const bt = isT ? "3x" : "2x";
+          return `
+        <div style="position:relative;display:inline-block">
+          <button
+            class="${isCurrent ? "" : "secondary"}"
+            onclick="selectGameweek(${gw})"
+            style="padding:0.4rem 0.8rem;font-size:0.85rem">
+            Runde ${gw}
+          </button>
+          ${isD || isT ? `<span style="position:absolute;top:-8px;right:-8px;background:${bc};color:white;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10">${bt}</span>` : ""}
+        </div>`;
+        })
+        .join("")}
+    </div>
+  `;
 }
 
 function renderMatches(matches) {
@@ -182,30 +215,29 @@ function renderMatches(matches) {
           isPast || isFinished
             ? prediction
               ? `<span style="font-weight:600">${prediction.predicted_home} - ${prediction.predicted_away}
-                 ${prediction.points_awarded !== null ? `<span style="color:var(--accent);margin-left:0.5rem">${prediction.points_awarded} p</span>` : ""}</span>`
+               ${prediction.points_awarded !== null ? `<span style="color:var(--accent);margin-left:0.5rem">${prediction.points_awarded} p</span>` : ""}</span>`
               : `<span style="color:var(--text-muted)">Ingen tipping</span>`
             : prediction
               ? `<div style="display:flex;align-items:center;gap:0.5rem">
-                  <div class="prediction-inputs">
-                      <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
-                      <span style="color:var(--text-muted)">-</span>
-                      <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
-                  </div>
-                  <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
-                 </div>`
+                <div class="prediction-inputs">
+                    <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
+                    <span style="color:var(--text-muted)">-</span>
+                    <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
+                </div>
+                <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
+               </div>`
               : `<div style="display:flex;align-items:center;gap:0.5rem">
-                  <div class="prediction-inputs">
-                      <input type="number" id="home-${m.id}" value="0" min="0" max="20">
-                      <span style="color:var(--text-muted)">-</span>
-                      <input type="number" id="away-${m.id}" value="0" min="0" max="20">
-                  </div>
-                  <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Tipp</button>
-                 </div>`
+                <div class="prediction-inputs">
+                    <input type="number" id="home-${m.id}" value="0" min="0" max="20">
+                    <span style="color:var(--text-muted)">-</span>
+                    <input type="number" id="away-${m.id}" value="0" min="0" max="20">
+                </div>
+                <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Tipp</button>
+               </div>`
         }
     </div>
     <div id="match-history-${m.id}"></div>
-</div>
-    `;
+</div>`;
       })
       .join("");
 }
@@ -239,6 +271,7 @@ async function savePrediction(matchId) {
 
 function selectGameweek(gw) {
   currentGameweek = gw;
+  gwGridOpen = false;
   renderGameweekButtons(allMatches);
   renderMatches(allMatches);
 }
@@ -248,7 +281,6 @@ async function loadPredictions() {
   userPredictions = await getUserPredictions(userId);
 }
 
-// Season prediction
 function renderSeasonStandings(teams) {
   const list = document.getElementById("season-standings-list");
   list.innerHTML = teams
@@ -291,7 +323,6 @@ function selectOrSwap(index) {
 async function loadSeasonPrediction() {
   const userId = localStorage.getItem("userId");
   const existing = await getSeasonPrediction(userId, "2026-27");
-
   const statusEl = document.getElementById("season-prediction-status");
 
   if (existing && existing.length > 0 && existing[0].predicted_standings) {
@@ -368,7 +399,6 @@ async function loadDeadlineCountdown() {
   setInterval(updateCountdown, 1000);
 }
 
-// Toggles the prediction list open/closed and flips the arrow
 async function toggleMatchPredictions(
   matchId,
   homeTeam,
@@ -380,7 +410,6 @@ async function toggleMatchPredictions(
   const arrow = document.getElementById(`arrow-${matchId}`);
   const existing = document.getElementById(`history-${matchId}`);
 
-  // Already loaded — just toggle visibility
   if (existing) {
     const isHidden = existing.style.display === "none";
     existing.style.display = isHidden ? "block" : "none";
@@ -388,7 +417,6 @@ async function toggleMatchPredictions(
     return;
   }
 
-  // First open — fetch and render
   if (arrow) arrow.textContent = "▲";
 
   const res = await fetch(`${API_URL}/Predictions/match/${matchId}`, {
@@ -434,13 +462,12 @@ async function toggleMatchPredictions(
               : `<div style="width:28px;height:28px;border-radius:50%;background:var(--bg-input);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">${name[0].toUpperCase()}</div>`;
 
             return `
-            <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:0.5rem;align-items:center;padding:0.5rem 1.5rem;background:${isExact ? "rgba(74,222,128,0.05)" : "transparent"}">
-                ${avatarHtml}
-                <span style="font-size:0.9rem;font-weight:500">${name}</span>
-                <span style="text-align:center;font-weight:600;font-size:0.9rem;background:var(--bg-input);padding:0.2rem 0.6rem;border-radius:6px">${p.predicted_home} - ${p.predicted_away}</span>
-                <span style="text-align:right;font-weight:700;color:${pointColor};font-size:0.9rem">${icon} ${pts !== null ? pts + "p" : "-"}</span>
-            </div>
-          `;
+          <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:0.5rem;align-items:center;padding:0.5rem 1.5rem;background:${isExact ? "rgba(74,222,128,0.05)" : "transparent"}">
+              ${avatarHtml}
+              <span style="font-size:0.9rem;font-weight:500">${name}</span>
+              <span style="text-align:center;font-weight:600;font-size:0.9rem;background:var(--bg-input);padding:0.2rem 0.6rem;border-radius:6px">${p.predicted_home} - ${p.predicted_away}</span>
+              <span style="text-align:right;font-weight:700;color:${pointColor};font-size:0.9rem">${icon} ${pts !== null ? pts + "p" : "-"}</span>
+          </div>`;
           })
           .join("")}
     </div>
@@ -451,8 +478,8 @@ function toggleNav() {
   document.getElementById("nav-menu").classList.toggle("open");
 }
 window.toggleNav = toggleNav;
-
 window.toggleMatchPredictions = toggleMatchPredictions;
+window.toggleGwGrid = toggleGwGrid;
 
 async function loadPage() {
   allMatches = await getMatchesFromDB();
