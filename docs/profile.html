@@ -46,9 +46,9 @@
       </div>
 
       <div class="card" style="max-width: 480px; margin: 0 auto">
-        <!-- Avatar display -->
+        <!-- Current avatar display -->
         <div class="profile-avatar-section">
-          <div class="profile-avatar-wrapper" id="avatar-wrapper">
+          <div class="profile-avatar-wrapper">
             <div class="profile-avatar-container">
               <div
                 class="skeleton profile-avatar-skeleton"
@@ -69,7 +69,6 @@
             </div>
             <button
               class="profile-avatar-edit-btn"
-              id="avatar-edit-btn"
               onclick="document.getElementById('avatar-file-input').click()"
               title="Endre profilbilde"
             >
@@ -96,45 +95,89 @@
           onchange="handleAvatarSelect(event)"
         />
 
-        <!-- Crop preview (shown after selecting image) -->
+        <!-- Crop section -->
         <div id="crop-section" style="display: none">
-          <div class="profile-section-label">Forhåndsvisning</div>
-          <div class="profile-crop-preview-row">
-            <div class="profile-crop-preview-box">
-              <canvas
-                id="crop-canvas"
-                width="400"
-                height="400"
-                style="display: none"
-              ></canvas>
+          <div class="profile-section-label" style="margin-bottom: 0.5rem">
+            Dra for å justere utsnitt
+          </div>
+
+          <!-- Interactive crop canvas -->
+          <div
+            style="
+              border-radius: 10px;
+              overflow: hidden;
+              border: 1px solid var(--border);
+              margin-bottom: 1rem;
+            "
+          >
+            <canvas
+              id="crop-canvas"
+              style="display: block; width: 100%"
+            ></canvas>
+          </div>
+
+          <!-- Circle previews -->
+          <div
+            class="profile-crop-preview-sizes"
+            style="
+              flex-direction: row;
+              justify-content: center;
+              gap: 1.5rem;
+              margin-bottom: 1.25rem;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
               <img
-                id="crop-preview"
-                class="profile-crop-preview-img"
-                src=""
-                alt=""
-              />
-            </div>
-            <div class="profile-crop-preview-sizes">
-              <div class="profile-crop-size-label">Stor</div>
-              <img
-                id="preview-large"
+                id="crop-preview-circle"
                 class="profile-preview-circle preview-large"
                 src=""
                 alt=""
               />
-              <div class="profile-crop-size-label" style="margin-top: 0.75rem">
-                Liten
-              </div>
+              <span class="profile-crop-size-label">Stor</span>
+            </div>
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
+              <img
+                id="preview-large"
+                class="profile-preview-circle"
+                style="width: 40px; height: 40px"
+                src=""
+                alt=""
+              />
+              <span class="profile-crop-size-label">Medium</span>
+            </div>
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.4rem;
+              "
+            >
               <img
                 id="preview-small"
                 class="profile-preview-circle preview-small"
                 src=""
                 alt=""
               />
+              <span class="profile-crop-size-label">Liten</span>
             </div>
           </div>
 
-          <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem">
+          <div style="display: flex; gap: 0.75rem">
             <button
               class="btn btn-secondary"
               onclick="cancelUpload()"
@@ -154,7 +197,7 @@
           </div>
         </div>
 
-        <!-- No crop section — just the edit button hint -->
+        <!-- Default state -->
         <div
           id="no-crop-section"
           style="text-align: center; margin-top: 1.25rem"
@@ -172,8 +215,7 @@
               margin-top: 0.6rem;
             "
           >
-            Bildet blir automatisk beskåret til kvadrat og skalert til 400×400
-            px
+            Dra bildet for å velge utsnitt før opplasting
           </p>
         </div>
 
