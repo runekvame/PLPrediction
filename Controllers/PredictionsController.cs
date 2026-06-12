@@ -141,7 +141,7 @@ namespace PLPrediction.Controllers
             _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
 
             var res = await _http.GetAsync(
-                $"{_supabaseUrl}/rest/v1/predictions?match_id=eq.{matchId}&select=*,users(username)&order=points_awarded.desc");
+                $"{_supabaseUrl}/rest/v1/predictions?match_id=eq.{matchId}&select=*,users(username, avatar_url)&order=points_awarded.desc");
             var json = await res.Content.ReadAsStringAsync();
 
             return Content(json, "application/json");

@@ -22,7 +22,6 @@ function toggleDropdown() {
   dropdown.classList.toggle("open");
 }
 
-// Close dropdown when clicking outside
 document.addEventListener("click", function (e) {
   const avatar = document.querySelector(".nav-avatar");
   if (avatar && !avatar.contains(e.target)) {
@@ -116,8 +115,8 @@ function renderGameweekButtons(matches) {
       const badgeText = isTriple ? "3x" : "2x";
       return `
       <div style="position:relative;display:inline-block">
-          <button 
-              class="${isCurrent ? "" : "secondary"}" 
+          <button
+              class="${isCurrent ? "" : "secondary"}"
               onclick="selectGameweek(${gw})"
               style="padding:0.4rem 0.8rem;font-size:0.85rem">
               Runde ${gw}
@@ -168,7 +167,7 @@ function renderMatches(matches) {
         return `
 <div class="match-card" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;gap:0.8rem;${isFinished ? "cursor:pointer" : ""}"
-        ${isFinished ? `onclick="loadMatchPredictions('${m.id}', '${m.home_team}', '${m.away_team}', ${m.home_score}, ${m.away_score})"` : ""}>
+        ${isFinished ? `onclick="toggleMatchPredictions('${m.id}', '${m.home_team}', '${m.away_team}', ${m.home_score}, ${m.away_score})"` : ""}>
         <div class="match-teams" style="flex:1">
             <span class="match-team">${m.home_team}</span>
             ${
@@ -180,7 +179,7 @@ function renderMatches(matches) {
         </div>
         <div style="display:flex;align-items:center;gap:0.5rem">
             <span class="badge ${isFinished ? "finished" : "upcoming"}">${isFinished ? "Ferdig" : formatDate(m.kickoff_time)}</span>
-            ${isFinished ? '<span style="color:var(--text-muted);font-size:0.8rem">▼</span>' : ""}
+            ${isFinished ? `<span id="arrow-${m.id}" style="color:var(--text-muted);font-size:0.8rem">▼</span>` : ""}
         </div>
     </div>
 
@@ -288,11 +287,9 @@ function selectOrSwap(index) {
   } else {
     const a = selectedTeamIndex;
     const b = index;
-
     const temp = seasonTeams[a];
     seasonTeams[a] = seasonTeams[b];
     seasonTeams[b] = temp;
-
     selectedTeamIndex = null;
     renderSeasonStandings(seasonTeams);
   }
@@ -347,7 +344,6 @@ async function loadDeadlineCountdown() {
 
   const deadline = new Date(deadlineSetting.value);
   const now = new Date();
-
   if (now > deadline) return;
 
   const countdown = document.getElementById("deadline-countdown");
@@ -357,12 +353,10 @@ async function loadDeadlineCountdown() {
   function updateCountdown() {
     const now = new Date();
     const diff = deadline - now;
-
     if (diff <= 0) {
       countdownText.textContent = "Fristen er utløpt";
       return;
     }
-
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -381,26 +375,34 @@ async function loadDeadlineCountdown() {
   setInterval(updateCountdown, 1000);
 }
 
-async function loadMatchPredictions(
+// Toggles the prediction list open/closed and flips the arrow
+async function toggleMatchPredictions(
   matchId,
   homeTeam,
   awayTeam,
   homeScore,
   awayScore,
 ) {
+  const container = document.getElementById(`match-history-${matchId}`);
+  const arrow = document.getElementById(`arrow-${matchId}`);
   const existing = document.getElementById(`history-${matchId}`);
+
+  // Already loaded — just toggle visibility
   if (existing) {
-    existing.style.display =
-      existing.style.display === "none" ? "block" : "none";
+    const isHidden = existing.style.display === "none";
+    existing.style.display = isHidden ? "block" : "none";
+    if (arrow) arrow.textContent = isHidden ? "▲" : "▼";
     return;
   }
+
+  // First open — fetch and render
+  if (arrow) arrow.textContent = "▲";
 
   const res = await fetch(`${API_URL}/Predictions/match/${matchId}`, {
     headers: getHeaders(),
   });
   const predictions = await res.json();
 
-  const container = document.getElementById(`match-history-${matchId}`);
   if (!container) return;
 
   if (!predictions || predictions.length === 0) {
@@ -413,7 +415,8 @@ async function loadMatchPredictions(
 
   container.innerHTML = `
     <div id="history-${matchId}" style="border-top:1px solid var(--border);padding:0.5rem 0">
-        <div style="display:grid;grid-template-columns:1fr auto auto;gap:0.5rem;padding:0.4rem 1.5rem;margin-bottom:0.3rem">
+        <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:0.5rem;padding:0.4rem 1.5rem;margin-bottom:0.3rem;align-items:center">
+            <span></span>
             <span style="color:var(--text-muted);font-size:0.8rem;font-weight:600">SPILLER</span>
             <span style="color:var(--text-muted);font-size:0.8rem;font-weight:600;text-align:center">TIPPING</span>
             <span style="color:var(--text-muted);font-size:0.8rem;font-weight:600;text-align:right">POENG</span>
@@ -430,9 +433,17 @@ async function loadMatchPredictions(
                 ? "#facc15"
                 : "var(--text-muted)";
             const icon = isExact ? "🎯" : isCorrect ? "✅" : "❌";
+            const name = p.users?.username || "Ukjent";
+            const avatarUrl = p.users?.avatar_url || null;
+
+            const avatarHtml = avatarUrl
+              ? `<img src="${avatarUrl}" alt="${name}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;flex-shrink:0;" />`
+              : `<div style="width:28px;height:28px;border-radius:50%;background:var(--bg-input);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">${name[0].toUpperCase()}</div>`;
+
             return `
-            <div style="display:grid;grid-template-columns:1fr auto auto;gap:0.5rem;align-items:center;padding:0.5rem 1.5rem;border-radius:0;background:${isExact ? "rgba(74,222,128,0.05)" : "transparent"}">
-                <span style="font-size:0.9rem;font-weight:500">${p.users?.username || "Ukjent"}</span>
+            <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:0.5rem;align-items:center;padding:0.5rem 1.5rem;background:${isExact ? "rgba(74,222,128,0.05)" : "transparent"}">
+                ${avatarHtml}
+                <span style="font-size:0.9rem;font-weight:500">${name}</span>
                 <span style="text-align:center;font-weight:600;font-size:0.9rem;background:var(--bg-input);padding:0.2rem 0.6rem;border-radius:6px">${p.predicted_home} - ${p.predicted_away}</span>
                 <span style="text-align:right;font-weight:700;color:${pointColor};font-size:0.9rem">${icon} ${pts !== null ? pts + "p" : "-"}</span>
             </div>
@@ -448,7 +459,7 @@ function toggleNav() {
 }
 window.toggleNav = toggleNav;
 
-window.loadMatchPredictions = loadMatchPredictions;
+window.toggleMatchPredictions = toggleMatchPredictions;
 
 async function loadPage() {
   allMatches = await getMatchesFromDB();
