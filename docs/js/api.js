@@ -180,16 +180,17 @@ async function initNavAvatar() {
   const username = localStorage.getItem("username") || "?";
   const btn = document.getElementById("avatar-btn");
   const header = document.getElementById("dropdown-username");
-  if (header) header.textContent = username;
+  const navUsername = document.getElementById("nav-username");
 
+  // Show immediately from localStorage
+  if (header) header.textContent = username;
+  if (btn) btn.textContent = username.charAt(0).toUpperCase();
+  if (navUsername) navUsername.textContent = username;
+
+  // Then fetch photo in background and update if available
   const profile = await getProfile();
   const avatarUrl = profile.avatar_url || null;
-
-  if (btn) {
-    if (avatarUrl) {
-      btn.innerHTML = `<img src="${avatarUrl}" alt="${username}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
-    } else {
-      btn.textContent = username.charAt(0).toUpperCase();
-    }
+  if (btn && avatarUrl) {
+    btn.innerHTML = `<img src="${avatarUrl}" alt="${username}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
   }
 }

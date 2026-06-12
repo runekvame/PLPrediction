@@ -19,7 +19,7 @@ function logout() {
   window.location.href = "index.html";
 }
 
-initNavAvatar();
+initNavAvatar().catch(() => {});
 
 function toggleDropdown() {
   const dropdown = document.getElementById("nav-dropdown");
