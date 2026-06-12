@@ -8,14 +8,7 @@ function logout() {
   window.location.href = "index.html";
 }
 
-const username = localStorage.getItem("username");
-if (username) {
-  const initial = username[0].toUpperCase();
-  const btn = document.getElementById("avatar-btn");
-  const header = document.getElementById("dropdown-username");
-  if (btn) btn.textContent = initial;
-  if (header) header.textContent = username;
-}
+initNavAvatar();
 
 function toggleDropdown() {
   const dropdown = document.getElementById("nav-dropdown");

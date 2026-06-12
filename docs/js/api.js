@@ -52,6 +52,12 @@ async function submitPrediction(matchId, predictedHome, predictedAway) {
     headers: getHeaders(),
     body: JSON.stringify({ matchId, predictedHome, predictedAway }),
   });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    return { error: data || "Kunne ikke lagre tipping" };
+  }
+
   return res.json();
 }
 
@@ -70,22 +76,6 @@ async function getLeaderboard() {
 
 async function getGameweekLeaderboard(gameweek) {
   const res = await fetch(`${API_URL}/Leaderboard/gameweek/${gameweek}`);
-  return res.json();
-}
-
-// Season predictions
-async function submitPrediction(matchId, predictedHome, predictedAway) {
-  const res = await fetch(`${API_URL}/Predictions`, {
-    method: "POST",
-    headers: getHeaders(),
-    body: JSON.stringify({ matchId, predictedHome, predictedAway }),
-  });
-
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    return { error: data || "Kunne ikke lagre tipping" };
-  }
-
   return res.json();
 }
 
@@ -156,9 +146,6 @@ async function updateSetting(key, value) {
   return res.json();
 }
 
-// ── ADDITIONS TO api.js ─────────────────────────────────────────────────────
-// Append these two functions to the bottom of your existing api.js
-
 async function getProfile() {
   const res = await fetch(`${API_URL}/Profile`, {
     headers: getHeaders(),
@@ -186,5 +173,23 @@ async function uploadAvatarApi(blob) {
     return res.json();
   } catch (err) {
     return { error: "Nettverksfeil" };
+  }
+}
+
+async function initNavAvatar() {
+  const username = localStorage.getItem("username") || "?";
+  const btn = document.getElementById("avatar-btn");
+  const header = document.getElementById("dropdown-username");
+  if (header) header.textContent = username;
+
+  const profile = await getProfile();
+  const avatarUrl = profile.avatar_url || null;
+
+  if (btn) {
+    if (avatarUrl) {
+      btn.innerHTML = `<img src="${avatarUrl}" alt="${username}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    } else {
+      btn.textContent = username.charAt(0).toUpperCase();
+    }
   }
 }
