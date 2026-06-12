@@ -55,6 +55,8 @@ async function loadProfile() {
   if (await isAdmin()) {
     document.getElementById("admin-link").style.display = "";
   }
+  const adminLink2 = document.getElementById("admin-link-secondary");
+  if (adminLink2) adminLink2.style.display = "block";
 
   document.getElementById("profile-username").textContent = username;
   const pointsEl = document.getElementById("profile-points");

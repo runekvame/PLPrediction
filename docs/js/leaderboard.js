@@ -189,6 +189,9 @@ async function loadPage() {
     document.getElementById("admin-link").style.display = "block";
   }
 
+  const adminLink2 = document.getElementById("admin-link-secondary");
+  if (adminLink2) adminLink2.style.display = "block";
+
   const settings = await getSettings();
   if (Array.isArray(settings)) {
     const visibleSetting = settings.find(
