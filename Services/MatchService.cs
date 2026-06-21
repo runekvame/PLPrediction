@@ -22,7 +22,7 @@ namespace PLPrediction.Services
             _http.DefaultRequestHeaders.Clear();
             _http.DefaultRequestHeaders.Add("X-Auth-Token", _apiKey);
 
-            var response = await _http.GetAsync("https://api.football-data.org/v4/competitions/PL/matches?season=2025");
+            var response = await _http.GetAsync("https://api.football-data.org/v4/competitions/PL/matches?season=2026");
             var json = await response.Content.ReadAsStringAsync();
             var doc = JsonDocument.Parse(json);
 

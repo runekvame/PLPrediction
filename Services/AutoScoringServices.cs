@@ -25,8 +25,8 @@ namespace PLPrediction.Services
                     Console.WriteLine($"AutoScoring error: {ex.Message}");
                 }
 
-                // Run every 6 hours
-                await Task.Delay(TimeSpan.FromHours(6), stoppingToken);
+                // Run every 4 hours
+                await Task.Delay(TimeSpan.FromHours(4), stoppingToken);
             }
         }
 

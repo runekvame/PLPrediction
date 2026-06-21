@@ -31,6 +31,8 @@ builder.Services.AddScoped<ScoringService>();
 builder.Services.AddHttpClient<SeasonScoringService>();
 builder.Services.AddScoped<SeasonScoringService>();
 
+builder.Services.AddHostedService<AutoScoringService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
