@@ -53,7 +53,7 @@ function renderUpcomingMatches(matches) {
             <span class="match-score" style="background:none;color:var(--text-muted)">vs</span>
             <span class="match-team away">${m.away_team}</span>
         </div>
-        <div class="match-info">${formatDate(m.kickoff_time)}</div>
+        <div class="match-info"><span style="font-size:0.85em;font-weight:600;opacity:0.9">Frist: </span>${formatDate(m.kickoff_time)}</div>
     </div>
   `,
     )
