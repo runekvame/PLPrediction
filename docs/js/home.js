@@ -207,6 +207,8 @@ async function loadPage() {
     );
   }
 
+  loadSeasonDeadlineCountdown(matches);
+
   const adminStatus = await isAdmin();
   if (adminStatus) {
     document.getElementById("admin-link").style.display = "block";
@@ -214,6 +216,50 @@ async function loadPage() {
 
   const adminLink2 = document.getElementById("admin-link-secondary");
   if (adminLink2) adminLink2.style.display = "block";
+}
+
+function loadSeasonDeadlineCountdown(matches) {
+  if (!matches || matches.length === 0) return;
+
+  // Deadline is 3 hours before the first match of the season
+  const firstMatch = matches
+    .slice()
+    .sort((a, b) => new Date(a.kickoff_time) - new Date(b.kickoff_time))[0];
+  if (!firstMatch) return;
+
+  const deadline = new Date(new Date(firstMatch.kickoff_time).getTime() - 3 * 60 * 60 * 1000);
+  const now = new Date();
+  if (now > deadline) return;
+
+  const banner = document.getElementById("season-deadline-banner");
+  const bannerText = document.getElementById("season-deadline-text");
+  if (!banner || !bannerText) return;
+
+  banner.style.display = "flex";
+
+  function updateCountdown() {
+    const now = new Date();
+    const diff = deadline - now;
+    if (diff <= 0) {
+      bannerText.textContent = "Fristen er utløpt";
+      return;
+    }
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    if (days > 0) {
+      bannerText.textContent = `Sesongtipping stenger om ${days} dager, ${hours} timer og ${minutes} min`;
+    } else if (hours > 0) {
+      bannerText.textContent = `Sesongtipping stenger om ${hours} timer, ${minutes} min og ${seconds} sek`;
+    } else {
+      bannerText.textContent = `Sesongtipping stenger om ${minutes} min og ${seconds} sek`;
+    }
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
 }
 
 loadPage();

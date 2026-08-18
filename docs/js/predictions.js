@@ -37,11 +37,13 @@ const PL_TEAMS = [
   "AFC Bournemouth",
   "Brentford FC",
   "Brighton & Hove Albion FC",
-  "Burnley FC",
   "Chelsea FC",
+  "Coventry City FC",
   "Crystal Palace FC",
   "Everton FC",
   "Fulham FC",
+  "Hull City AFC",
+  "Ipswich Town FC",
   "Leeds United FC",
   "Liverpool FC",
   "Manchester City FC",
@@ -50,8 +52,6 @@ const PL_TEAMS = [
   "Nottingham Forest FC",
   "Sunderland AFC",
   "Tottenham Hotspur FC",
-  "West Ham United FC",
-  "Wolverhampton Wanderers FC",
 ];
 
 function switchTab(tab) {
@@ -204,7 +204,7 @@ function renderMatches(matches) {
             <span class="match-team away">${m.away_team}</span>
         </div>
         <div style="display:flex;align-items:center;gap:0.5rem">
-            <span class="badge ${isFinished ? "finished" : "upcoming"}">${isFinished ? "Ferdig" : formatDate(m.kickoff_time)}</span>
+            <span class="badge ${isFinished ? "finished" : "upcoming"}">${isFinished ? "Ferdig" : `<span style="font-size:0.85em;font-weight:600;opacity:0.9">Frist: </span>${formatDate(m.kickoff_time)}`}</span>
             ${isFinished ? `<span id="arrow-${m.id}" style="color:var(--text-muted);font-size:0.8rem">▼</span>` : ""}
         </div>
     </div>
@@ -357,16 +357,16 @@ async function saveSeasonPrediction() {
   }
 }
 
-async function loadDeadlineCountdown() {
-  const settings = await getSettings();
-  if (!Array.isArray(settings)) return;
+function loadDeadlineCountdown() {
+  if (!allMatches || allMatches.length === 0) return;
 
-  const deadlineSetting = settings.find(
-    (s) => s.key === "season_predictions_deadline",
-  );
-  if (!deadlineSetting) return;
+  // Deadline is 3 hours before the first match of the season
+  const firstMatch = allMatches
+    .slice()
+    .sort((a, b) => new Date(a.kickoff_time) - new Date(b.kickoff_time))[0];
+  if (!firstMatch) return;
 
-  const deadline = new Date(deadlineSetting.value);
+  const deadline = new Date(new Date(firstMatch.kickoff_time).getTime() - 3 * 60 * 60 * 1000);
   const now = new Date();
   if (now > deadline) return;
 
@@ -504,7 +504,12 @@ async function loadPage() {
   const adminLink2 = document.getElementById("admin-link-secondary");
   if (adminLink2) adminLink2.style.display = "block";
 
-  await loadDeadlineCountdown();
+  loadDeadlineCountdown();
+}
+
+// Open season tab directly if URL hash is #season (e.g. from home page banner)
+if (window.location.hash === "#season") {
+  switchTab("season");
 }
 
 loadPage();
