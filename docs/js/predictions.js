@@ -77,8 +77,14 @@ function switchTab(tab) {
   }
 }
 
+function normalizeDate(dateStr) {
+  return dateStr && !dateStr.endsWith("Z") && !dateStr.includes("+")
+    ? dateStr + "Z"
+    : dateStr;
+}
+
 function formatDate(dateStr) {
-  const date = new Date(dateStr);
+  const date = new Date(normalizeDate(dateStr));
   return date.toLocaleDateString("nb-NO", {
     weekday: "short",
     day: "numeric",
@@ -188,7 +194,8 @@ function renderMatches(matches) {
       .map((m) => {
         const prediction = getUserPrediction(m.id);
         const isFinished = m.status === "FINISHED";
-        const isPast = new Date(m.kickoff_time) < new Date();
+        const matchDeadline = new Date(new Date(normalizeDate(m.kickoff_time)).getTime() - 2 * 60 * 60 * 1000);
+        const isPast = matchDeadline < new Date();
 
         return `
 <div class="match-card" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden">
@@ -204,7 +211,10 @@ function renderMatches(matches) {
             <span class="match-team away">${m.away_team}</span>
         </div>
         <div style="display:flex;align-items:center;gap:0.5rem">
-            <span class="badge ${isFinished ? "finished" : "upcoming"}">${isFinished ? "Ferdig" : `<span style="font-size:0.85em;font-weight:600;opacity:0.9">Frist: </span>${formatDate(m.kickoff_time)}`}</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.25rem">
+                <span class="badge ${isFinished ? "finished" : "upcoming"}">${isFinished ? "Ferdig" : `<span style="font-size:0.85em;font-weight:600;opacity:0.9">Frist: </span>${formatDate(new Date(new Date(normalizeDate(m.kickoff_time)).getTime() - 2 * 60 * 60 * 1000).toISOString())}`}</span>
+                ${!isFinished ? `<span style="font-size:0.75rem;color:var(--text-muted)">Kampstart: ${formatDate(m.kickoff_time)}</span>` : ""}
+            </div>
             ${isFinished ? `<span id="arrow-${m.id}" style="color:var(--text-muted);font-size:0.8rem">▼</span>` : ""}
         </div>
     </div>
@@ -363,10 +373,10 @@ function loadDeadlineCountdown() {
   // Deadline is 3 hours before the first match of the season
   const firstMatch = allMatches
     .slice()
-    .sort((a, b) => new Date(a.kickoff_time) - new Date(b.kickoff_time))[0];
+    .sort((a, b) => new Date(normalizeDate(a.kickoff_time)) - new Date(normalizeDate(b.kickoff_time)))[0];
   if (!firstMatch) return;
 
-  const deadline = new Date(new Date(firstMatch.kickoff_time).getTime() - 3 * 60 * 60 * 1000);
+  const deadline = new Date(new Date(normalizeDate(firstMatch.kickoff_time)).getTime() - 3 * 60 * 60 * 1000);
   const now = new Date();
   if (now > deadline) return;
 
@@ -485,7 +495,7 @@ async function loadPage() {
   allMatches = await getMatchesFromDB();
 
   const now = new Date();
-  const upcoming = allMatches.filter((m) => new Date(m.kickoff_time) > now);
+  const upcoming = allMatches.filter((m) => new Date(normalizeDate(m.kickoff_time)) > now);
   if (upcoming.length > 0) {
     currentGameweek = upcoming[0].gameweek;
   } else {

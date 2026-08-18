@@ -24,8 +24,14 @@ document.addEventListener("click", function (e) {
 
 window.toggleDropdown = toggleDropdown;
 
+function normalizeDate(dateStr) {
+  return dateStr && !dateStr.endsWith("Z") && !dateStr.includes("+")
+    ? dateStr + "Z"
+    : dateStr;
+}
+
 function formatDate(dateStr) {
-  const date = new Date(dateStr);
+  const date = new Date(normalizeDate(dateStr));
   return date.toLocaleDateString("nb-NO", {
     weekday: "short",
     day: "numeric",
@@ -158,7 +164,7 @@ async function loadPage() {
   const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
   const TRIPLE_POINTS_GAMEWEEKS = [38];
   const now = new Date();
-  const upcomingMatches = matches.filter((m) => new Date(m.kickoff_time) > now);
+  const upcomingMatches = matches.filter((m) => new Date(normalizeDate(m.kickoff_time)) > now);
   const currentGW =
     upcomingMatches.length > 0
       ? upcomingMatches[0].gameweek
@@ -224,10 +230,10 @@ function loadSeasonDeadlineCountdown(matches) {
   // Deadline is 3 hours before the first match of the season
   const firstMatch = matches
     .slice()
-    .sort((a, b) => new Date(a.kickoff_time) - new Date(b.kickoff_time))[0];
+    .sort((a, b) => new Date(normalizeDate(a.kickoff_time)) - new Date(normalizeDate(b.kickoff_time)))[0];
   if (!firstMatch) return;
 
-  const deadline = new Date(new Date(firstMatch.kickoff_time).getTime() - 3 * 60 * 60 * 1000);
+  const deadline = new Date(new Date(normalizeDate(firstMatch.kickoff_time)).getTime() - 3 * 60 * 60 * 1000);
   const now = new Date();
   if (now > deadline) return;
 
