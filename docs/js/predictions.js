@@ -274,7 +274,9 @@ async function savePrediction(matchId) {
       btn.disabled = false;
       btn.innerHTML = "Tipp";
     }
-    const errorMsg = result.error || "Kunne ikke lagre tipping. Prøv igjen.";
+    const errorMsg = typeof result.error === "string"
+      ? result.error
+      : "Kunne ikke lagre tipping. Prøv igjen.";
     alert(errorMsg);
   }
 }

@@ -122,6 +122,19 @@ async function deleteUser(userId) {
   return res.json();
 }
 
+async function submitSeasonPrediction(season, predictedStandings) {
+  const res = await fetch(`${API_URL}/SeasonPredictions`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ season, predictedStandings }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    return { error: data || "Kunne ikke lagre sesongtipping" };
+  }
+  return res.json();
+}
+
 async function getSeasonPrediction(userId, season) {
   const res = await fetch(
     `${API_URL}/SeasonPredictions/${userId}?season=${season}`,

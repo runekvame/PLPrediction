@@ -25,7 +25,9 @@ namespace PLPrediction.Controllers
         public async Task<IActionResult> GetProfile([FromHeader] string authorization)
         {
             var token = authorization.Replace("Bearer ", "");
-            var user = await _supabase.Auth.GetUser(token);
+            Supabase.Gotrue.User? user;
+            try { user = await _supabase.Auth.GetUser(token); }
+            catch { return Unauthorized("Token expired or invalid"); }
             if (user == null) return Unauthorized("Invalid token");
 
             _http.DefaultRequestHeaders.Clear();
@@ -46,7 +48,9 @@ namespace PLPrediction.Controllers
         public async Task<IActionResult> UploadAvatar([FromHeader] string authorization)
         {
             var token = authorization.Replace("Bearer ", "");
-            var user = await _supabase.Auth.GetUser(token);
+            Supabase.Gotrue.User? user;
+            try { user = await _supabase.Auth.GetUser(token); }
+            catch { return Unauthorized("Token expired or invalid"); }
             if (user == null) return Unauthorized("Invalid token");
 
             // Read raw PNG bytes from request body (already resized client-side to 400x400)

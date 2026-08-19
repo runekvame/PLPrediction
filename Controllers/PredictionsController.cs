@@ -26,7 +26,9 @@ namespace PLPrediction.Controllers
         public async Task<IActionResult> SubmitPrediction(SubmitPredictionDTO dto, [FromHeader] string authorization)
         {
             var token = authorization.Replace("Bearer ", "");
-            var user = await _supabase.Auth.GetUser(token);
+            Supabase.Gotrue.User? user;
+            try { user = await _supabase.Auth.GetUser(token); }
+            catch { return Unauthorized("Token expired or invalid"); }
             if (user == null) return Unauthorized("Invalid token");
 
             _http.DefaultRequestHeaders.Clear();
@@ -73,6 +75,7 @@ namespace PLPrediction.Controllers
                 predicted_away = dto.PredictedAway
             });
 
+            _http.DefaultRequestHeaders.Add("Prefer", "resolution=merge-duplicates");
             var res = await _http.PostAsync($"{_supabaseUrl}/rest/v1/predictions",
                 new StringContent(body, Encoding.UTF8, "application/json"));
 

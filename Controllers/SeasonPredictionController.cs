@@ -36,7 +36,9 @@ namespace PLPrediction.Controllers
         {
             // Get user from token
             var token = authorization.Replace("Bearer ", "");
-            var user = await _supabase.Auth.GetUser(token);
+            Supabase.Gotrue.User? user;
+            try { user = await _supabase.Auth.GetUser(token); }
+            catch { return Unauthorized("Token expired or invalid"); }
             if (user == null) return Unauthorized("Invalid token");
 
             // Check deadline
