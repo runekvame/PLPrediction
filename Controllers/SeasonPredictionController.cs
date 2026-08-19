@@ -65,7 +65,7 @@ namespace PLPrediction.Controllers
             SetHeaders();
             _http.DefaultRequestHeaders.Add("Prefer", "resolution=merge-duplicates");
 
-            var res = await _http.PostAsync($"{_supabaseUrl}/rest/v1/season_predictions",
+            var res = await _http.PostAsync($"{_supabaseUrl}/rest/v1/season_predictions?on_conflict=user_id,season",
                 new StringContent(body, Encoding.UTF8, "application/json"));
 
             if (!res.IsSuccessStatusCode)
