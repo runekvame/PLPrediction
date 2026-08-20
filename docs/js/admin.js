@@ -49,12 +49,25 @@ async function syncMatches() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Synkroniserer...';
 
-  const res = await fetch(`${API_URL}/Matches/sync`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`${API_URL}/Matches/sync`, {
+      headers: getHeaders(),
+    });
 
-  btn.disabled = false;
-  btn.innerHTML = "Synkroniser kamper";
-  showAlert(data.message || "Kamper synkronisert!", "success");
+    if (!res.ok) {
+      const errorText = await res.text();
+      showAlert(`Sync feilet (${res.status}): ${errorText}`, "error");
+      return;
+    }
+
+    const data = await res.json();
+    showAlert(data.message || "Kamper synkronisert!", "success");
+  } catch (err) {
+    showAlert(`Sync feilet: ${err.message}`, "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Synkroniser kamper";
+  }
 }
 
 async function scoreGameweek() {
