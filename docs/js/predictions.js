@@ -202,8 +202,11 @@ function renderMatches(matches) {
         const matchDeadline = new Date(new Date(normalizeDate(m.kickoff_time)).getTime() - 2 * 60 * 60 * 1000);
         const isPast = matchDeadline < new Date();
 
+        const cardStyle = prediction && !isPast && !isFinished
+          ? 'border: 1.5px solid rgba(74,222,128,0.45); box-shadow: inset 0 0 24px rgba(74,222,128,0.07);'
+          : '';
         return `
-<div class="match-card" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden">
+<div class="match-card" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden;${cardStyle}">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem;gap:0.8rem;${isFinished ? "cursor:pointer" : ""}"
         ${isFinished ? `onclick="toggleMatchPredictions('${m.id}', '${m.home_team}', '${m.away_team}', ${m.home_score}, ${m.away_score})"` : ""}>
         <div class="match-teams" style="flex:1">
@@ -233,20 +236,25 @@ function renderMatches(matches) {
                ${prediction.points_awarded !== null ? `<span style="color:var(--accent);margin-left:0.5rem">${prediction.points_awarded} p</span>` : ""}</span>`
               : `<span style="color:var(--text-muted)">Ingen tipping</span>`
             : prediction
-              ? `<div style="display:flex;align-items:center;gap:0.5rem">
-                <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem">
-                  <div style="display:flex;gap:0.25rem;font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.03em">
-                    <span style="min-width:44px;text-align:center">${shortTeam(m.home_team)}</span>
-                    <span style="width:14px"></span>
-                    <span style="min-width:44px;text-align:center">${shortTeam(m.away_team)}</span>
+              ? `<div style="display:flex;flex-direction:column;gap:0.35rem;align-items:flex-end">
+                <span style="font-size:0.72rem;color:var(--accent);font-weight:600;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);border-radius:6px;padding:0.15rem 0.5rem;">
+                  ✓ Lagret: ${prediction.predicted_home} – ${prediction.predicted_away}
+                </span>
+                <div style="display:flex;align-items:center;gap:0.5rem">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem">
+                    <div style="display:flex;gap:0.25rem;font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.03em">
+                      <span style="min-width:44px;text-align:center">${shortTeam(m.home_team)}</span>
+                      <span style="width:14px"></span>
+                      <span style="min-width:44px;text-align:center">${shortTeam(m.away_team)}</span>
+                    </div>
+                    <div class="prediction-inputs">
+                      <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
+                      <span style="color:var(--text-muted)">-</span>
+                      <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
+                    </div>
                   </div>
-                  <div class="prediction-inputs">
-                    <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
-                    <span style="color:var(--text-muted)">-</span>
-                    <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
-                  </div>
+                  <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
                 </div>
-                <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
                </div>`
               : `<div style="display:flex;align-items:center;gap:0.5rem">
                 <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem">
