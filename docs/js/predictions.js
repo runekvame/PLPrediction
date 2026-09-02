@@ -407,7 +407,11 @@ function loadDeadlineCountdown() {
 
   const deadline = new Date(new Date(normalizeDate(firstMatch.kickoff_time)).getTime() - 3 * 60 * 60 * 1000);
   const now = new Date();
-  if (now > deadline) return;
+  if (now > deadline) {
+    const cd = document.getElementById("deadline-countdown");
+    if (cd) cd.style.display = "none";
+    return;
+  }
 
   const countdown = document.getElementById("deadline-countdown");
   const countdownText = document.getElementById("countdown-text");
@@ -417,7 +421,7 @@ function loadDeadlineCountdown() {
     const now = new Date();
     const diff = deadline - now;
     if (diff <= 0) {
-      countdownText.textContent = "Fristen er utløpt";
+      countdown.style.display = "none";
       return;
     }
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
