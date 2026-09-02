@@ -206,6 +206,20 @@ async function loadSettings() {
     const input = document.getElementById("pot-amount-input");
     if (input) input.value = potSetting.value;
   }
+
+  const lastRunSetting = settings.find((s) => s.key === "last_auto_score_run");
+  const lastRunEl = document.getElementById("last-sync-time");
+  if (lastRunEl) {
+    if (lastRunSetting && lastRunSetting.value) {
+      const d = new Date(lastRunSetting.value);
+      const formatted = d.toLocaleString("nb-NO", {
+        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+      });
+      lastRunEl.textContent = `Sist kjørt: ${formatted}`;
+    } else {
+      lastRunEl.textContent = "Sist kjørt: ikke registrert ennå";
+    }
+  }
 }
 
 function updateToggleButton() {

@@ -76,6 +76,28 @@ namespace PLPrediction.Services
             }
 
             Console.WriteLine("Auto-sync complete.");
+
+            // Save last run timestamp to settings
+            var timestamp = DateTime.UtcNow.ToString("o");
+            var checkRes = await http.GetAsync($"{supabaseUrl}/rest/v1/settings?key=eq.last_auto_score_run&select=key");
+            var checkJson = await checkRes.Content.ReadAsStringAsync();
+            var exists = JsonDocument.Parse(checkJson).RootElement.GetArrayLength() > 0;
+
+            http.DefaultRequestHeaders.Clear();
+            http.DefaultRequestHeaders.Add("apikey", supabaseKey);
+            http.DefaultRequestHeaders.Add("Authorization", $"Bearer {supabaseKey}");
+            http.DefaultRequestHeaders.Add("Prefer", "return=minimal");
+
+            if (exists)
+            {
+                var body = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { value = timestamp }), System.Text.Encoding.UTF8, "application/json");
+                await http.PatchAsync($"{supabaseUrl}/rest/v1/settings?key=eq.last_auto_score_run", body);
+            }
+            else
+            {
+                var body = new StringContent(System.Text.Json.JsonSerializer.Serialize(new { key = "last_auto_score_run", value = timestamp }), System.Text.Encoding.UTF8, "application/json");
+                await http.PostAsync($"{supabaseUrl}/rest/v1/settings", body);
+            }
         }
     }
 }
