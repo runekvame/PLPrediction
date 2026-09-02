@@ -83,6 +83,11 @@ function normalizeDate(dateStr) {
     : dateStr;
 }
 
+function shortTeam(name) {
+  const parts = name.split(" ").filter(w => w !== "AFC" && w !== "FC" && w !== "&");
+  return parts[0] || name;
+}
+
 function formatDate(dateStr) {
   const date = new Date(normalizeDate(dateStr));
   return date.toLocaleDateString("nb-NO", {
@@ -229,18 +234,32 @@ function renderMatches(matches) {
               : `<span style="color:var(--text-muted)">Ingen tipping</span>`
             : prediction
               ? `<div style="display:flex;align-items:center;gap:0.5rem">
-                <div class="prediction-inputs">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem">
+                  <div style="display:flex;gap:0.25rem;font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.03em">
+                    <span style="min-width:44px;text-align:center">${shortTeam(m.home_team)}</span>
+                    <span style="width:14px"></span>
+                    <span style="min-width:44px;text-align:center">${shortTeam(m.away_team)}</span>
+                  </div>
+                  <div class="prediction-inputs">
                     <input type="number" id="home-${m.id}" value="${prediction.predicted_home}" min="0" max="20">
                     <span style="color:var(--text-muted)">-</span>
                     <input type="number" id="away-${m.id}" value="${prediction.predicted_away}" min="0" max="20">
+                  </div>
                 </div>
                 <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Oppdater</button>
                </div>`
               : `<div style="display:flex;align-items:center;gap:0.5rem">
-                <div class="prediction-inputs">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:0.2rem">
+                  <div style="display:flex;gap:0.25rem;font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.03em">
+                    <span style="min-width:44px;text-align:center">${shortTeam(m.home_team)}</span>
+                    <span style="width:14px"></span>
+                    <span style="min-width:44px;text-align:center">${shortTeam(m.away_team)}</span>
+                  </div>
+                  <div class="prediction-inputs">
                     <input type="number" id="home-${m.id}" value="0" min="0" max="20">
                     <span style="color:var(--text-muted)">-</span>
                     <input type="number" id="away-${m.id}" value="0" min="0" max="20">
+                  </div>
                 </div>
                 <button onclick="savePrediction('${m.id}')" style="padding:0.4rem 0.8rem;font-size:0.85rem">Tipp</button>
                </div>`
