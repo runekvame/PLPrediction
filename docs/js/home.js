@@ -151,6 +151,52 @@ function toggleNav() {
 }
 window.toggleNav = toggleNav;
 
+
+function renderPotCard(amount) {
+  const card = document.getElementById("pot-card");
+  if (!card) return;
+  if (!amount || amount <= 0) return;
+
+  const first  = Math.round(amount * 0.5);
+  const second = Math.round(amount * 0.3);
+  const third  = Math.round(amount * 0.2);
+
+  const fmt = (n) => n.toLocaleString("nb-NO") + " kr";
+
+  card.style.display = "block";
+  card.innerHTML = `
+    <h2>💰 Potten</h2>
+    <div style="text-align:center;margin:1rem 0 1.8rem">
+      <div style="font-size:2.4rem;font-weight:800;color:var(--accent)">${amount.toLocaleString("nb-NO")} kr</div>
+      <div style="color:var(--text-muted);font-size:0.85rem;margin-top:0.3rem">Totalt innestående</div>
+    </div>
+    <div style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:0.8rem">Premiering</div>
+    <div style="display:flex;justify-content:center;align-items:flex-end;gap:0.5rem">
+      <!-- 2nd -->
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+        <div style="font-size:1.5rem;margin-bottom:0.3rem">🥈</div>
+        <div style="font-weight:700;font-size:1rem">${fmt(second)}</div>
+        <div style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.5rem">30%</div>
+        <div style="background:rgba(148,163,184,0.2);border-radius:6px 6px 0 0;width:100%;height:52px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;color:var(--text-muted)">2</div>
+      </div>
+      <!-- 1st -->
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+        <div style="font-size:1.8rem;margin-bottom:0.3rem">🥇</div>
+        <div style="font-weight:800;font-size:1.1rem;color:var(--accent)">${fmt(first)}</div>
+        <div style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.5rem">50%</div>
+        <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.25);border-radius:6px 6px 0 0;width:100%;height:76px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;color:var(--accent)">1</div>
+      </div>
+      <!-- 3rd -->
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1">
+        <div style="font-size:1.5rem;margin-bottom:0.3rem">🥉</div>
+        <div style="font-weight:700;font-size:1rem">${fmt(third)}</div>
+        <div style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.5rem">20%</div>
+        <div style="background:rgba(217,119,6,0.12);border-radius:6px 6px 0 0;width:100%;height:36px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;color:#d97706">3</div>
+      </div>
+    </div>
+  `;
+}
+
 async function loadPage() {
   const matches = await getMatchesFromDB();
   document.getElementById("upcoming-matches").innerHTML =
@@ -211,6 +257,13 @@ async function loadPage() {
       </div>
     `,
     );
+  }
+
+  // Load pot amount
+  const settings = await getSettings();
+  if (Array.isArray(settings)) {
+    const potSetting = settings.find((s) => s.key === "pot_amount");
+    if (potSetting) renderPotCard(parseInt(potSetting.value, 10));
   }
 
   loadSeasonDeadlineCountdown(matches);

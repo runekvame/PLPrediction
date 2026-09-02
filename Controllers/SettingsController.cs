@@ -57,9 +57,13 @@ namespace PLPrediction.Controllers
                 return Unauthorized("Not an admin");
 
             SetHeaders();
-            var body = JsonSerializer.Serialize(new { value });
-            await _http.PatchAsync($"{_supabaseUrl}/rest/v1/settings?key=eq.{key}",
-                new StringContent(body, Encoding.UTF8, "application/json"));
+            var body = JsonSerializer.Serialize(new { key, value });
+            var upsertRequest = new HttpRequestMessage(HttpMethod.Post, $"{_supabaseUrl}/rest/v1/settings");
+            upsertRequest.Headers.Add("apikey", _supabaseKey);
+            upsertRequest.Headers.Add("Authorization", $"Bearer {_supabaseKey}");
+            upsertRequest.Headers.Add("Prefer", "resolution=merge-duplicates");
+            upsertRequest.Content = new StringContent(body, Encoding.UTF8, "application/json");
+            await _http.SendAsync(upsertRequest);
 
             return Ok(new { message = $"Setting {key} updated to {value}" });
         }

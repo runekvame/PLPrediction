@@ -193,6 +193,25 @@
         </div>
 
         <div class="card">
+          <h2>💰 Potten</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+            Sett totalt pottbeløp som vises på hjemmesiden.
+          </p>
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <input
+              type="number"
+              id="pot-amount-input"
+              placeholder="Beløp i kr"
+              min="0"
+              style="background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; color: var(--text); width: 140px;"
+            />
+            <span style="color: var(--text-muted);">kr</span>
+            <button onclick="savePotAmount()">Lagre</button>
+          </div>
+          <div id="pot-save-msg" style="margin-top: 0.6rem; font-size: 0.85rem; color: var(--accent); display: none;">✓ Lagret</div>
+        </div>
+
+                <div class="card">
           <h2>Brukere</h2>
           <p
             style="
