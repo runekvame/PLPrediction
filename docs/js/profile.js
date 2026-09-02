@@ -352,22 +352,12 @@ async function loadGameweekHistory() {
   const userId = localStorage.getItem("userId");
   if (!userId) return;
 
-  const supabaseUrl = "https://fvzccuhpckmoaurhxfzy.supabase.co";
-  const supabaseKey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2emNjdWhwY2ttb2F1cmh4Znp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTQ0MDgsImV4cCI6MjA5NDYzMDQwOH0.lUV1tXVGoh8vRN0QziUPycqN_rSet-HNRr-YkeNVPKQ";
-
   const container = document.getElementById("gw-history-content");
   if (!container) return;
 
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/gameweek_scores?user_id=eq.${userId}&select=gameweek,points&order=gameweek.desc`,
-    {
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    },
-  );
+  const res = await fetch(`${API_URL}/Leaderboard/user/${userId}/scores`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
 
   if (!res.ok) {
     container.innerHTML =

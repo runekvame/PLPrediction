@@ -44,6 +44,19 @@ namespace PLPrediction.Controllers
             return Ok(JsonDocument.Parse(json).RootElement);
         }
 
+
+        [HttpGet("user/{userId}/scores")]
+        public async Task<IActionResult> GetUserGameweekScores(string userId)
+        {
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var res = await _http.GetAsync($"{_supabaseUrl}/rest/v1/gameweek_scores?user_id=eq.{userId}&select=gameweek,points&order=gameweek.desc");
+            var json = await res.Content.ReadAsStringAsync();
+
+            return Ok(JsonDocument.Parse(json).RootElement);
+        }
         [HttpGet("gameweek/all")]
         public async Task<IActionResult> GetAllGameweekScores()
         {
