@@ -334,10 +334,94 @@ async function savePotAmount() {
   }
 }
 
+
+function normalizeDate(d) {
+  return d && !d.endsWith("Z") && !d.includes("+") ? d + "Z" : d;
+}
+
+async function loadMissingPredictions() {
+  const container = document.getElementById("missing-predictions-content");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="skeleton skeleton-text" style="width:60%;height:1.2rem;margin-bottom:0.5rem;border-radius:6px"></div>
+    <div class="skeleton skeleton-text" style="width:100%;height:1.8rem;margin-bottom:0.4rem;border-radius:6px"></div>
+    <div class="skeleton skeleton-text" style="width:100%;height:1.8rem;border-radius:6px"></div>`;
+
+  try {
+    const matches = await getMatchesFromDB();
+    const now = new Date();
+    const upcoming = matches.filter(
+      (m) => new Date(normalizeDate(m.kickoff_time)) > now
+    );
+    const currentGw =
+      upcoming.length > 0
+        ? upcoming[0].gameweek
+        : Math.max(...matches.map((m) => m.gameweek));
+
+    const gwMatches = matches.filter((m) => m.gameweek === currentGw);
+    const gwMatchIds = new Set(gwMatches.map((m) => m.id));
+    const totalMatches = gwMatches.length;
+
+    const [usersRes, predsRes] = await Promise.all([
+      fetch(`${API_URL}/AdminAuth/users`, { headers: getHeaders() }),
+      fetch(`${API_URL}/Predictions/all`, { headers: getHeaders() }),
+    ]);
+
+    const users = await usersRes.json();
+    const allPredictions = await predsRes.json();
+
+    const nonAdminUsers = users.filter((u) => !u.is_admin);
+
+    // Count predictions per user for current gw
+    const predCountByUser = {};
+    allPredictions
+      .filter((p) => gwMatchIds.has(p.match_id))
+      .forEach((p) => {
+        predCountByUser[p.user_id] = (predCountByUser[p.user_id] || 0) + 1;
+      });
+
+    const notTipped  = nonAdminUsers.filter((u) => !predCountByUser[u.id]);
+    const partial    = nonAdminUsers.filter((u) => predCountByUser[u.id] > 0 && predCountByUser[u.id] < totalMatches);
+    const allTipped  = nonAdminUsers.filter((u) => predCountByUser[u.id] === totalMatches);
+
+    if (notTipped.length === 0 && partial.length === 0) {
+      container.innerHTML = `
+        <div style="display:flex;align-items:center;gap:0.6rem;color:var(--accent);font-weight:600">
+          <span style="font-size:1.2rem">✅</span> Alle ${nonAdminUsers.length} spillere har tippet alle ${totalMatches} kamper i runde ${currentGw}!
+        </div>`;
+      return;
+    }
+
+    function renderGroup(title, color, badge, users, predCount) {
+      if (users.length === 0) return "";
+      return `
+        <div style="margin-bottom:0.25rem;margin-top:0.75rem;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:${color}">${title} (${users.length})</div>
+        ${users.map((u, i) => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.6rem;border-radius:8px;background:${i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.03)"}">
+            <span style="font-weight:600">${u.username}</span>
+            <span style="font-size:0.75rem;color:${color};font-weight:700">${badge(u)}</span>
+          </div>`).join("")}`;
+    }
+
+    container.innerHTML = `
+      <div style="margin-bottom:0.5rem;font-size:0.85rem;color:var(--text-muted)">
+        Runde ${currentGw} — ${totalMatches} kamper totalt
+      </div>
+      ${renderGroup("Ikke tippet", "var(--danger)", () => "Ikke tippet", notTipped)}
+      ${renderGroup("Delvis tippet", "#facc15", (u) => `${predCountByUser[u.id]} / ${totalMatches}`, partial)}
+      ${renderGroup("Fullstendig tippet", "var(--accent)", () => "✓ Alle tippet", allTipped)}
+    `;
+  } catch (e) {
+    container.innerHTML = `<p style="color:var(--text-muted)">Kunne ikke hente data: ${e.message}</p>`;
+  }
+}
+
 async function loadPage() {
   await checkAdmin();
   await loadUsers();
   await loadSettings();
+  await loadMissingPredictions();
 }
 
 loadPage();

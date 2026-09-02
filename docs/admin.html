@@ -211,7 +211,20 @@
           <div id="pot-save-msg" style="margin-top: 0.6rem; font-size: 0.85rem; color: var(--accent); display: none;">✓ Lagret</div>
         </div>
 
-                <div class="card">
+                
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <h2 style="margin:0">👀 Hvem har ikke tippet?</h2>
+          <button class="secondary" onclick="loadMissingPredictions()" style="padding:0.35rem 0.8rem;font-size:0.85rem">Oppdater</button>
+        </div>
+        <div id="missing-predictions-content">
+          <div class="skeleton skeleton-text" style="width:60%;height:1.2rem;margin-bottom:0.5rem;border-radius:6px"></div>
+          <div class="skeleton skeleton-text" style="width:100%;height:1.8rem;margin-bottom:0.4rem;border-radius:6px"></div>
+          <div class="skeleton skeleton-text" style="width:100%;height:1.8rem;border-radius:6px"></div>
+        </div>
+      </div>
+
+<div class="card">
           <h2>Brukere</h2>
           <p
             style="
@@ -307,7 +320,7 @@
       </div>
     </main>
 
-    <script src="js/api.js?v=4"></script>
-    <script src="js/admin.js?v=4"></script>
+    <script src="js/api.js?v=5"></script>
+    <script src="js/admin.js?v=5"></script>
   </body>
 </html>
