@@ -193,8 +193,42 @@ function renderMatches(matches) {
        </div>`
       : "";
 
+  // Completion indicator
+  const totalMatches = filtered.length;
+  const tippedMatches = filtered.filter((m) => getUserPrediction(m.id)).length;
+  const allTipped = tippedMatches === totalMatches;
+  const someUntipped = filtered.some((m) => {
+    const now = new Date();
+    const kickoff = new Date(normalizeDate(m.kickoff_time));
+    const deadline = new Date(kickoff.getTime() - 2 * 60 * 60 * 1000);
+    return !getUserPrediction(m.id) && now < deadline;
+  });
+
+  const progressPct = totalMatches > 0 ? Math.round((tippedMatches / totalMatches) * 100) : 0;
+  const indicatorColor = allTipped ? "var(--accent)" : tippedMatches > 0 ? "#facc15" : "var(--text-muted)";
+  const indicatorBg = allTipped ? "rgba(74,222,128,0.08)" : "var(--bg-input)";
+  const indicatorBorder = allTipped ? "1px solid rgba(74,222,128,0.25)" : "1px solid var(--border)";
+  const indicatorIcon = allTipped ? "✅" : tippedMatches > 0 ? "🕐" : "📝";
+  const indicatorText = allTipped
+    ? `Alle ${totalMatches} kamper er tippet!`
+    : someUntipped
+    ? `Tippet ${tippedMatches} av ${totalMatches} kamper`
+    : `Tippet ${tippedMatches} av ${totalMatches} kamper`;
+
+  const completionBanner = `
+    <div style="display:flex;align-items:center;gap:0.8rem;padding:0.75rem 1rem;background:${indicatorBg};border:${indicatorBorder};border-radius:10px;margin-bottom:1rem;">
+      <span style="font-size:1.1rem">${indicatorIcon}</span>
+      <div style="flex:1">
+        <div style="font-size:0.9rem;font-weight:600;color:${indicatorColor}">${indicatorText}</div>
+        <div style="margin-top:0.4rem;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+          <div style="height:100%;width:${progressPct}%;background:${indicatorColor};border-radius:2px;transition:width 0.3s"></div>
+        </div>
+      </div>
+      <span style="font-size:0.85rem;font-weight:700;color:${indicatorColor}">${progressPct}%</span>
+    </div>`;
+
   container.innerHTML =
-    doubleBanner +
+    doubleBanner + completionBanner +
     filtered
       .map((m) => {
         const prediction = getUserPrediction(m.id);
