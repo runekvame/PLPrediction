@@ -1,3 +1,9 @@
+function normalizeDate(dateStr) {
+  return dateStr && !dateStr.endsWith("Z") && !dateStr.includes("+")
+    ? dateStr + "Z"
+    : dateStr;
+}
+
 if (!localStorage.getItem("token")) {
   window.location.href = "index.html";
 }
@@ -227,7 +233,24 @@ async function loadPage() {
   allGameweeks = [...new Set(matches.map((m) => m.gameweek))].sort(
     (a, b) => a - b,
   );
+
+  // Find the current/most relevant gameweek to default to:
+  // - First gameweek that has at least one upcoming match
+  // - Fallback: last gameweek with finished matches
+  const now = new Date();
+  const upcomingGws = matches
+    .filter((m) => {
+      const kickoff = new Date(normalizeDate(m.kickoff_time));
+      return kickoff > now && (m.status === "TIMED" || m.status === "SCHEDULED");
+    })
+    .map((m) => m.gameweek);
+
+  const defaultGw = upcomingGws.length > 0
+    ? Math.min(...upcomingGws)
+    : allGameweeks[allGameweeks.length - 1];
+
   renderGwButtons(allGameweeks);
+  if (defaultGw) await selectGw(defaultGw);
 
   const adminStatus = await isAdmin();
   if (adminStatus) {
