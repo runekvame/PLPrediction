@@ -25,7 +25,7 @@ namespace PLPrediction.Controllers
             _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
             _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
 
-            var res = await _http.GetAsync($"{_supabaseUrl}/rest/v1/users?select=username,total_points,avatar_url&is_admin=eq.false&order=total_points.desc");
+            var res = await _http.GetAsync($"{_supabaseUrl}/rest/v1/users?select=id,username,total_points,avatar_url&is_admin=eq.false&order=total_points.desc");
             var json = await res.Content.ReadAsStringAsync();
 
             return Ok(JsonDocument.Parse(json).RootElement);

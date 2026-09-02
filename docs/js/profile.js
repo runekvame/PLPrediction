@@ -364,7 +364,7 @@ async function loadGameweekHistory() {
     {
       headers: {
         apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     },
   );

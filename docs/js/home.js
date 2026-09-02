@@ -197,6 +197,43 @@ function renderPotCard(amount) {
   `;
 }
 
+
+function renderMyRank(players) {
+  const userId = localStorage.getItem("userId");
+  if (!userId || !players || players.length === 0) return;
+
+  const idx = players.findIndex((p) => (p.id ?? p.user_id) === userId);
+  if (idx === -1) return;
+
+  const me = players[idx];
+  const rank = idx + 1;
+  const total = players.length;
+  const medals = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  const icon = medals[rank] || `#${rank}`;
+  const isTop3 = rank <= 3;
+  const borderColor = isTop3 ? "rgba(74,222,128,0.35)" : "var(--border)";
+  const bg = isTop3 ? "rgba(74,222,128,0.06)" : "transparent";
+
+  const card = document.getElementById("my-rank-card");
+  if (!card) return;
+
+  card.style.display = "block";
+  card.innerHTML = `
+    <div style="display:flex;align-items:center;gap:1rem;padding:0.25rem 0">
+      <div style="font-size:1.6rem;min-width:2rem;text-align:center">${icon}</div>
+      <div style="flex:1">
+        <div style="font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.15rem">Din plassering</div>
+        <div style="font-weight:700;font-size:1rem">${rank}. plass av ${total} spillere</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:1.4rem;font-weight:800;color:var(--accent)">${me.total_points ?? 0}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted)">poeng</div>
+      </div>
+    </div>`;
+  card.style.border = `1px solid ${borderColor}`;
+  card.style.background = bg;
+}
+
 async function loadPage() {
   const matches = await getMatchesFromDB();
   document.getElementById("upcoming-matches").innerHTML =
@@ -206,6 +243,7 @@ async function loadPage() {
 
   const leaderboard = await getLeaderboard();
   renderPodium(leaderboard);
+  renderMyRank(leaderboard);
 
   const DOUBLE_POINTS_GAMEWEEKS = [1, 19];
   const TRIPLE_POINTS_GAMEWEEKS = [38];
