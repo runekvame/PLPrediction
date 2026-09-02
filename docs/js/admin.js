@@ -70,6 +70,35 @@ async function syncMatches() {
   }
 }
 
+
+async function resetAndRescoreGameweek() {
+  const gw = document.getElementById("score-gameweek").value;
+  if (!gw) { showAlert("Skriv inn spillerundenummer", "error"); return; }
+
+  const confirmed = confirm(
+    `⚠️ Er du sikker på at du vil nullstille og rekjøre poeng for runde ${gw}?\n\nDette vil:\n- Trekke tilbake alle poeng fra runden\n- Slette runde-scorene\n- Beregne poengene på nytt`
+  );
+  if (!confirmed) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Nullstiller...';
+
+  try {
+    const res = await fetch(`${API_URL}/Scoring/gameweek/${gw}/reset`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+    const data = await res.json();
+    showAlert(data.message || `Runde ${gw} nullstilt og rekjørt!`, "success");
+  } catch (e) {
+    showAlert(`Feil: ${e.message}`, "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Nullstill og rekjør";
+  }
+}
+
 async function scoreGameweek() {
   const gw = document.getElementById("score-gameweek").value;
   if (!gw) {

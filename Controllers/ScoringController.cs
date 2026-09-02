@@ -20,5 +20,12 @@ namespace PLPrediction.Controllers
             await _scoringService.ScoreGameweekAsync(gameweek);
             return Ok(new { message = $"Gameweek {gameweek} scored successfully" });
         }
+        [HttpPost("gameweek/{gameweek}/reset")]
+        public async Task<IActionResult> ResetAndRescoreGameweek(int gameweek)
+        {
+            await _scoringService.ResetAndRescoreGameweekAsync(gameweek);
+            return Ok(new { message = $"Gameweek {gameweek} reset and rescored successfully" });
+        }
+
     }
 }

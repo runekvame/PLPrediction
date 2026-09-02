@@ -135,5 +135,63 @@ namespace PLPrediction.Services
                 }
             }
         }
+        public async Task ResetAndRescoreGameweekAsync(int gameweek)
+        {
+            SetHeaders();
+
+            // Step 1: Get all match IDs for this gameweek
+            var matchRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/matches?gameweek=eq.{gameweek}&select=id");
+            var matchJson = await matchRes.Content.ReadAsStringAsync();
+            var matches = JsonDocument.Parse(matchJson).RootElement;
+            var matchIds = matches.EnumerateArray().Select(m => m.GetProperty("id").GetString()).ToList();
+
+            if (!matchIds.Any()) return;
+
+            // Step 2: Get all scored predictions for these matches
+            var inClause = string.Join(",", matchIds);
+            SetHeaders();
+            var predRes = await _http.GetAsync(
+                $"{_supabaseUrl}/rest/v1/predictions?match_id=in.({inClause})&points_awarded=not.is.null&select=id,user_id,points_awarded,match_id");
+            var predJson = await predRes.Content.ReadAsStringAsync();
+            var predictions = JsonDocument.Parse(predJson).RootElement;
+
+            // Step 3: Subtract points from users and nullify predictions
+            var pointsToSubtract = new Dictionary<string, int>();
+            foreach (var pred in predictions.EnumerateArray())
+            {
+                var userId = pred.GetProperty("user_id").GetString()!;
+                var pts = pred.GetProperty("points_awarded").GetInt32();
+                if (!pointsToSubtract.ContainsKey(userId)) pointsToSubtract[userId] = 0;
+                pointsToSubtract[userId] += pts;
+
+                SetHeaders();
+                await _http.PatchAsync(
+                    $"{_supabaseUrl}/rest/v1/predictions?id=eq.{pred.GetProperty("id").GetString()}",
+                    new StringContent(JsonSerializer.Serialize(new { points_awarded = (int?)null }), Encoding.UTF8, "application/json"));
+            }
+
+            foreach (var kvp in pointsToSubtract)
+            {
+                SetHeaders();
+                var userRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/users?id=eq.{kvp.Key}&select=total_points");
+                var userJson = await userRes.Content.ReadAsStringAsync();
+                var users = JsonDocument.Parse(userJson).RootElement;
+                var current = users[0].GetProperty("total_points").GetInt32();
+                var newTotal = Math.Max(0, current - kvp.Value);
+
+                SetHeaders();
+                await _http.PatchAsync(
+                    $"{_supabaseUrl}/rest/v1/users?id=eq.{kvp.Key}",
+                    new StringContent(JsonSerializer.Serialize(new { total_points = newTotal }), Encoding.UTF8, "application/json"));
+            }
+
+            // Step 4: Delete gameweek_scores for this gameweek
+            SetHeaders();
+            await _http.DeleteAsync($"{_supabaseUrl}/rest/v1/gameweek_scores?gameweek=eq.{gameweek}");
+
+            // Step 5: Re-score
+            await ScoreGameweekAsync(gameweek);
+        }
+
     }
 }
