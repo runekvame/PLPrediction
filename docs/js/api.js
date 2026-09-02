@@ -207,3 +207,18 @@ async function initNavAvatar() {
     btn.innerHTML = `<img src="${avatarUrl}" alt="${username}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
   }
 }
+
+// Set active nav link based on current page
+function setActiveNav() {
+  const currentPage = window.location.pathname.split('/').pop() || 'home.html';
+  document.querySelectorAll('nav ul a, .nav-secondary ul a').forEach(link => {
+    const href = link.getAttribute('href');
+    if (href === currentPage) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', setActiveNav);

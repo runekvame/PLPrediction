@@ -73,9 +73,15 @@ nav ul a {
   transition: color 0.2s;
 }
 
-nav ul a:hover,
+nav ul a:hover {
+  color: var(--text);
+}
+
 nav ul a.active {
   color: var(--text);
+  font-weight: 600;
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: calc(0.5rem - 3px);
 }
 
 nav .nav-right {
@@ -1018,9 +1024,15 @@ button:disabled {
   transition: color 0.2s;
 }
 
-.nav-secondary ul a:hover,
+.nav-secondary ul a:hover {
+  color: var(--text);
+}
+
 .nav-secondary ul a.active {
   color: var(--text);
+  font-weight: 600;
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: calc(0.65rem - 3px);
 }
 
 @media (max-width: 768px) {

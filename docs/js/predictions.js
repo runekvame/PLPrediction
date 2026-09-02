@@ -58,21 +58,21 @@ function switchTab(tab) {
   if (tab === "matches") {
     document.getElementById("matches-tab").style.display = "block";
     document.getElementById("season-tab").style.display = "none";
-    document.getElementById("tab-matches").style.borderBottomColor =
-      "var(--accent)";
+    document.getElementById("tab-matches").style.borderBottomColor = "var(--accent)";
     document.getElementById("tab-matches").style.color = "var(--text)";
-    document.getElementById("tab-season").style.borderBottomColor =
-      "transparent";
+    document.getElementById("tab-matches").style.fontWeight = "600";
+    document.getElementById("tab-season").style.borderBottomColor = "transparent";
     document.getElementById("tab-season").style.color = "var(--text-muted)";
+    document.getElementById("tab-season").style.fontWeight = "400";
   } else {
     document.getElementById("matches-tab").style.display = "none";
     document.getElementById("season-tab").style.display = "block";
-    document.getElementById("tab-season").style.borderBottomColor =
-      "var(--accent)";
+    document.getElementById("tab-season").style.borderBottomColor = "var(--accent)";
     document.getElementById("tab-season").style.color = "var(--text)";
-    document.getElementById("tab-matches").style.borderBottomColor =
-      "transparent";
+    document.getElementById("tab-season").style.fontWeight = "600";
+    document.getElementById("tab-matches").style.borderBottomColor = "transparent";
     document.getElementById("tab-matches").style.color = "var(--text-muted)";
+    document.getElementById("tab-matches").style.fontWeight = "400";
     loadSeasonPrediction();
   }
 }
