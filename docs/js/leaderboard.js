@@ -234,20 +234,25 @@ async function loadPage() {
     (a, b) => a - b,
   );
 
-  // Find the current/most relevant gameweek to default to:
-  // - First gameweek that has at least one upcoming match
-  // - Fallback: last gameweek with finished matches
+
+  // Default to the last completed gameweek (has scores).
+  // Fall back to the first upcoming GW, then the last GW overall.
   const now = new Date();
+
+  const finishedGws = matches
+    .filter((m) => m.status === "FINISHED")
+    .map((m) => m.gameweek);
+  const lastFinishedGw = finishedGws.length > 0 ? Math.max(...finishedGws) : null;
+
   const upcomingGws = matches
     .filter((m) => {
       const kickoff = new Date(normalizeDate(m.kickoff_time));
       return kickoff > now && (m.status === "TIMED" || m.status === "SCHEDULED");
     })
     .map((m) => m.gameweek);
+  const firstUpcomingGw = upcomingGws.length > 0 ? Math.min(...upcomingGws) : null;
 
-  const defaultGw = upcomingGws.length > 0
-    ? Math.min(...upcomingGws)
-    : allGameweeks[allGameweeks.length - 1];
+  const defaultGw = lastFinishedGw ?? firstUpcomingGw ?? allGameweeks[allGameweeks.length - 1];
 
   renderGwButtons(allGameweeks);
   if (defaultGw) await selectGw(defaultGw);
