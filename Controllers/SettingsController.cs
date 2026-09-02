@@ -56,19 +56,22 @@ namespace PLPrediction.Controllers
             if (adminData.GetArrayLength() == 0 || !adminData[0].GetProperty("is_admin").GetBoolean())
                 return Unauthorized("Not an admin");
 
-            // Try PATCH first (update existing row), ask for representation to detect if row existed
+            // Check if setting already exists
             SetHeaders();
-            _http.DefaultRequestHeaders.Add("Prefer", "return=representation");
-            var patchBody = JsonSerializer.Serialize(new { value });
-            var patchRes = await _http.PatchAsync(
-                $"{_supabaseUrl}/rest/v1/settings?key=eq.{key}",
-                new StringContent(patchBody, Encoding.UTF8, "application/json"));
-            var patchResult = await patchRes.Content.ReadAsStringAsync();
+            var checkRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/settings?key=eq.{key}&select=key");
+            var checkJson = await checkRes.Content.ReadAsStringAsync();
+            var exists = JsonDocument.Parse(checkJson).RootElement.GetArrayLength() > 0;
 
-            // If no row existed (empty array returned), INSERT it
-            if (patchResult.Trim() == "[]")
+            SetHeaders();
+            if (exists)
             {
-                SetHeaders();
+                var patchBody = JsonSerializer.Serialize(new { value });
+                await _http.PatchAsync(
+                    $"{_supabaseUrl}/rest/v1/settings?key=eq.{key}",
+                    new StringContent(patchBody, Encoding.UTF8, "application/json"));
+            }
+            else
+            {
                 var insertBody = JsonSerializer.Serialize(new { key, value });
                 await _http.PostAsync(
                     $"{_supabaseUrl}/rest/v1/settings",

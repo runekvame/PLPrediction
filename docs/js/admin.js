@@ -200,6 +200,12 @@ async function loadSettings() {
     seasonPredictionsVisible = visibleSetting.value === "true";
     updateToggleButton();
   }
+
+  const potSetting = settings.find((s) => s.key === "pot_amount");
+  if (potSetting) {
+    const input = document.getElementById("pot-amount-input");
+    if (input) input.value = potSetting.value;
+  }
 }
 
 function updateToggleButton() {
@@ -293,6 +299,38 @@ async function downloadBackup() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = "Last ned sikkerhetskopi";
+  }
+}
+
+
+async function savePotAmount() {
+  const input = document.getElementById("pot-amount-input");
+  const msg = document.getElementById("pot-save-msg");
+  if (!input) return;
+  const amount = parseInt(input.value, 10);
+  if (isNaN(amount) || amount < 0) {
+    alert("Ugyldig beløp");
+    return;
+  }
+  try {
+    const res = await fetch(`${API_URL}/Settings/pot_amount`, {
+      method: "PATCH",
+      headers: getHeaders(),
+      body: JSON.stringify(String(amount)),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      alert(`Feil ved lagring (${res.status}): ${errText}`);
+      return;
+    }
+    if (msg) {
+      msg.textContent = "✓ Lagret";
+      msg.style.color = "var(--accent)";
+      msg.style.display = "block";
+      setTimeout(() => (msg.style.display = "none"), 2500);
+    }
+  } catch (e) {
+    alert("Nettverksfeil: " + e.message);
   }
 }
 
