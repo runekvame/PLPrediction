@@ -416,19 +416,45 @@ async function loadMissingPredictions() {
 
     const nonAdminUsers = users.filter((u) => !u.is_admin);
 
-    // Count predictions per user for current gw
-    const predCountByUser = {};
+    // Track which match IDs each user has tipped for current gw
+    const predMatchIdsByUser = {};
     allPredictions
       .filter((p) => gwMatchIds.has(p.match_id))
       .forEach((p) => {
-        predCountByUser[p.user_id] = (predCountByUser[p.user_id] || 0) + 1;
+        if (!predMatchIdsByUser[p.user_id]) predMatchIdsByUser[p.user_id] = new Set();
+        predMatchIdsByUser[p.user_id].add(p.match_id);
       });
 
-    const notTipped  = nonAdminUsers.filter((u) => !predCountByUser[u.id]);
-    const partial    = nonAdminUsers.filter((u) => predCountByUser[u.id] > 0 && predCountByUser[u.id] < totalMatches);
-    const allTipped  = nonAdminUsers.filter((u) => predCountByUser[u.id] === totalMatches);
+    // Which matches still have open deadlines (can still be tipped)
+    const openMatchIds = new Set(
+      gwMatches
+        .filter((m) => {
+          if (m.status === "FINISHED") return false;
+          const kickoff = new Date(normalizeDate(m.kickoff_time));
+          const deadline = new Date(kickoff.getTime() - 2 * 60 * 60 * 1000);
+          return deadline > now;
+        })
+        .map((m) => m.id)
+    );
 
-    if (notTipped.length === 0 && partial.length === 0) {
+    const predCount = (u) => predMatchIdsByUser[u.id]?.size || 0;
+    const tippedAllOpen = (u) =>
+      [...openMatchIds].every((id) => predMatchIdsByUser[u.id]?.has(id));
+
+    const notTipped        = nonAdminUsers.filter((u) => predCount(u) === 0);
+    const allTipped        = nonAdminUsers.filter((u) => predCount(u) === totalMatches);
+    // Missed some deadlines but has tipped all still-available matches
+    const missedButDone    = nonAdminUsers.filter((u) => {
+      const pc = predCount(u);
+      return pc > 0 && pc < totalMatches && tippedAllOpen(u);
+    });
+    // Still has open matches left to tip
+    const partial          = nonAdminUsers.filter((u) => {
+      const pc = predCount(u);
+      return pc > 0 && pc < totalMatches && !tippedAllOpen(u);
+    });
+
+    if (notTipped.length === 0 && partial.length === 0 && missedButDone.length === 0) {
       container.innerHTML = `
         <div style="display:flex;align-items:center;gap:0.6rem;color:var(--accent);font-weight:600">
           <span style="font-size:1.2rem">✅</span> Alle ${nonAdminUsers.length} spillere har tippet alle ${totalMatches} kamper i runde ${currentGw}!
@@ -436,14 +462,14 @@ async function loadMissingPredictions() {
       return;
     }
 
-    function renderGroup(title, color, badge, users, predCount) {
+    function renderGroup(title, color, users, badgeFn) {
       if (users.length === 0) return "";
       return `
         <div style="margin-bottom:0.25rem;margin-top:0.75rem;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:${color}">${title} (${users.length})</div>
         ${users.map((u, i) => `
           <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.6rem;border-radius:8px;background:${i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.03)"}">
             <span style="font-weight:600">${u.username}</span>
-            <span style="font-size:0.75rem;color:${color};font-weight:700">${badge(u)}</span>
+            <span style="font-size:0.75rem;color:${color};font-weight:700">${badgeFn(u)}</span>
           </div>`).join("")}`;
     }
 
@@ -451,9 +477,10 @@ async function loadMissingPredictions() {
       <div style="margin-bottom:0.5rem;font-size:0.85rem;color:var(--text-muted)">
         Runde ${currentGw} — ${totalMatches} kamper totalt
       </div>
-      ${renderGroup("Ikke tippet", "var(--danger)", () => "Ikke tippet", notTipped)}
-      ${renderGroup("Delvis tippet", "#facc15", (u) => `${predCountByUser[u.id]} / ${totalMatches}`, partial)}
-      ${renderGroup("Fullstendig tippet", "var(--accent)", () => "✓ Alle tippet", allTipped)}
+      ${renderGroup("Ikke tippet", "var(--danger)", notTipped, () => "Ikke tippet")}
+      ${renderGroup("Delvis tippet", "#facc15", partial, (u) => `${predCount(u)} / ${totalMatches}`)}
+      ${renderGroup("Gikk glipp av frist", "#f97316", missedButDone, (u) => `⚠️ ${predCount(u)} / ${totalMatches} — misset frist`)}
+      ${renderGroup("Fullstendig tippet", "var(--accent)", allTipped, () => "✓ Alle tippet")}
     `;
   } catch (e) {
     container.innerHTML = `<p style="color:var(--text-muted)">Kunne ikke hente data: ${e.message}</p>`;

@@ -195,33 +195,59 @@ function renderMatches(matches) {
 
   // Completion indicator
   const totalMatches = filtered.length;
+  const now = new Date();
   const tippedMatches = filtered.filter((m) => getUserPrediction(m.id)).length;
-  const allTipped = tippedMatches === totalMatches;
-  const someUntipped = filtered.some((m) => {
-    const now = new Date();
+  const missedMatches = filtered.filter((m) => {
+    if (getUserPrediction(m.id)) return false;
+    if (m.status === "FINISHED") return true;
     const kickoff = new Date(normalizeDate(m.kickoff_time));
     const deadline = new Date(kickoff.getTime() - 2 * 60 * 60 * 1000);
-    return !getUserPrediction(m.id) && now < deadline;
-  });
+    return deadline <= now;
+  }).length;
+  const allTipped = tippedMatches === totalMatches;
+  const hasMissed = missedMatches > 0;
 
   const progressPct = totalMatches > 0 ? Math.round((tippedMatches / totalMatches) * 100) : 0;
-  const indicatorColor = allTipped ? "var(--accent)" : tippedMatches > 0 ? "#facc15" : "var(--text-muted)";
-  const indicatorBg = allTipped ? "rgba(74,222,128,0.08)" : "var(--bg-input)";
-  const indicatorBorder = allTipped ? "1px solid rgba(74,222,128,0.25)" : "1px solid var(--border)";
-  const indicatorIcon = allTipped ? "✅" : tippedMatches > 0 ? "🕐" : "📝";
-  const indicatorText = allTipped
-    ? `Alle ${totalMatches} kamper er tippet!`
-    : someUntipped
-    ? `Tippet ${tippedMatches} av ${totalMatches} kamper`
-    : `Tippet ${tippedMatches} av ${totalMatches} kamper`;
+  const missedPct   = totalMatches > 0 ? Math.round((missedMatches  / totalMatches) * 100) : 0;
+
+  let indicatorColor, indicatorBg, indicatorBorder, indicatorIcon, indicatorText;
+  if (allTipped) {
+    indicatorColor  = "var(--accent)";
+    indicatorBg     = "rgba(74,222,128,0.08)";
+    indicatorBorder = "1px solid rgba(74,222,128,0.25)";
+    indicatorIcon   = "✅";
+    indicatorText   = `Alle ${totalMatches} kamper er tippet!`;
+  } else if (hasMissed) {
+    indicatorColor  = "#f97316";
+    indicatorBg     = "rgba(249,115,22,0.08)";
+    indicatorBorder = "1px solid rgba(249,115,22,0.3)";
+    indicatorIcon   = "⚠️";
+    const missedLabel = `${missedMatches} kamp${missedMatches > 1 ? "er" : ""}`;
+    indicatorText = tippedMatches > 0
+      ? `Tippet ${tippedMatches} av ${totalMatches} — gikk glipp av fristen for ${missedLabel}`
+      : `Gikk glipp av fristen for ${missedLabel}`;
+  } else if (tippedMatches > 0) {
+    indicatorColor  = "#facc15";
+    indicatorBg     = "var(--bg-input)";
+    indicatorBorder = "1px solid var(--border)";
+    indicatorIcon   = "🕐";
+    indicatorText   = `Tippet ${tippedMatches} av ${totalMatches} kamper`;
+  } else {
+    indicatorColor  = "var(--text-muted)";
+    indicatorBg     = "var(--bg-input)";
+    indicatorBorder = "1px solid var(--border)";
+    indicatorIcon   = "📝";
+    indicatorText   = `Tippet ${tippedMatches} av ${totalMatches} kamper`;
+  }
 
   const completionBanner = `
     <div style="display:flex;align-items:center;gap:0.8rem;padding:0.75rem 1rem;background:${indicatorBg};border:${indicatorBorder};border-radius:10px;margin-bottom:1rem;">
       <span style="font-size:1.1rem">${indicatorIcon}</span>
       <div style="flex:1">
         <div style="font-size:0.9rem;font-weight:600;color:${indicatorColor}">${indicatorText}</div>
-        <div style="margin-top:0.4rem;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
-          <div style="height:100%;width:${progressPct}%;background:${indicatorColor};border-radius:2px;transition:width 0.3s"></div>
+        <div style="margin-top:0.4rem;height:4px;background:var(--border);border-radius:2px;overflow:hidden;position:relative">
+          <div style="position:absolute;left:0;top:0;height:100%;width:${progressPct}%;background:var(--accent);border-radius:2px;transition:width 0.3s"></div>
+          <div style="position:absolute;left:${progressPct}%;top:0;height:100%;width:${missedPct}%;background:#f97316;transition:width 0.3s"></div>
         </div>
       </div>
       <span style="font-size:0.85rem;font-weight:700;color:${indicatorColor}">${progressPct}%</span>
