@@ -171,16 +171,7 @@
       <div id="season-tab" style="display: none">
         <div class="card" style="margin-bottom: 1rem">
           <h2>Tipp sesongtabellen</h2>
-          <p
-            style="
-              color: var(--text-muted);
-              font-size: 0.9rem;
-              margin-bottom: 1rem;
-            "
-          >
-            Trykk på et lag for å endre posisjonen. Du kan endre tipningen frem
-            til sesongstart.
-          </p>
+          <div id="season-info-text"></div>
           <div id="season-prediction-status"></div>
         </div>
 
@@ -194,7 +185,7 @@
             "
           >
             <h2>Din tabell</h2>
-            <button onclick="saveSeasonPrediction()">Lagre tipping</button>
+            <button id="save-season-btn" onclick="saveSeasonPrediction()">Lagre tipping</button>
           </div>
           <div id="season-standings-list"></div>
         </div>
@@ -202,6 +193,6 @@
     </main>
 
     <script src="js/api.js?v=4"></script>
-    <script src="js/predictions.js?v=4"></script>
+    <script src="js/predictions.js?v=5"></script>
   </body>
 </html>

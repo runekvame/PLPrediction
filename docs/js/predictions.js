@@ -29,6 +29,7 @@ let userPredictions = [];
 let currentGameweek = 1;
 let seasonTeams = [];
 let selectedTeamIndex = null;
+let seasonLocked = false;
 let gwGridOpen = false;
 
 const PL_TEAMS = [
@@ -386,11 +387,11 @@ function renderSeasonStandings(teams) {
     .map(
       (team, i) => `
     <div id="team-${i}"
-        onclick="selectOrSwap(${i})"
-        style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s ease;">
-        <span style="color:var(--accent);font-weight:700;min-width:24px">${i + 1}</span>
+        ${!seasonLocked ? `onclick="selectOrSwap(${i})"` : ""}
+        style="display:flex;align-items:center;gap:1rem;padding:0.8rem;margin-bottom:0.4rem;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;${!seasonLocked ? "cursor:pointer;transition:all 0.15s ease;" : "opacity:0.65;cursor:default;"}">
+        <span style="color:${seasonLocked ? "var(--text-muted)" : "var(--accent)"};font-weight:700;min-width:24px">${i + 1}</span>
         <span style="flex:1;font-weight:500">${team}</span>
-        <span style="color:var(--text-muted);font-size:1rem">⇅</span>
+        <span style="color:var(--text-muted);font-size:0.95rem">${seasonLocked ? "🔒" : "⇅"}</span>
     </div>
   `,
     )
@@ -398,6 +399,7 @@ function renderSeasonStandings(teams) {
 }
 
 function selectOrSwap(index) {
+  if (seasonLocked) return;
   if (selectedTeamIndex === null) {
     selectedTeamIndex = index;
     const el = document.getElementById(`team-${index}`);
@@ -423,18 +425,33 @@ async function loadSeasonPrediction() {
   const userId = localStorage.getItem("userId");
   const existing = await getSeasonPrediction(userId, "2026-27");
   const statusEl = document.getElementById("season-prediction-status");
+  const infoEl   = document.getElementById("season-info-text");
+  const saveBtn  = document.getElementById("save-season-btn");
 
   if (existing && existing.length > 0 && existing[0].predicted_standings) {
     seasonTeams = existing[0].predicted_standings;
     if (existing[0].points_awarded !== null) {
       statusEl.innerHTML = `<div class="alert success">Du fikk ${existing[0].points_awarded} poeng på sesongtippingen!</div>`;
+    } else if (seasonLocked) {
+      statusEl.innerHTML = `<div class="alert" style="display:block;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);color:#f97316">🔒 Sesongtipping er låst — din tipping er registrert.</div>`;
     } else {
       statusEl.innerHTML = `<div class="alert success" style="display:block">Du har allerede levert en tipping. Du kan oppdatere den frem til sesongstart.</div>`;
     }
   } else {
     seasonTeams = [...PL_TEAMS];
-    statusEl.innerHTML = "";
+    if (seasonLocked) {
+      statusEl.innerHTML = `<div class="alert" style="display:block;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171">Fristen er ute — du rakk ikke å tippe sesongtabellen.</div>`;
+    } else {
+      statusEl.innerHTML = "";
+    }
   }
+
+  if (infoEl) {
+    infoEl.innerHTML = seasonLocked
+      ? `<p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem">Sesongen har startet — tipping er ikke lenger mulig.</p>`
+      : `<p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem">Trykk på et lag for å endre posisjonen. Du kan endre tipningen frem til sesongstart.</p>`;
+  }
+  if (saveBtn) saveBtn.style.display = seasonLocked ? "none" : "";
 
   renderSeasonStandings(seasonTeams);
 }
@@ -467,7 +484,8 @@ function loadDeadlineCountdown() {
 
   const deadline = new Date(new Date(normalizeDate(firstMatch.kickoff_time)).getTime() - 3 * 60 * 60 * 1000);
   const now = new Date();
-  if (now > deadline) {
+  seasonLocked = now > deadline;
+  if (seasonLocked) {
     const cd = document.getElementById("deadline-countdown");
     if (cd) cd.style.display = "none";
     return;
