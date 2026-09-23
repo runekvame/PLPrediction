@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PLPrediction.Helpers;
 using System.Text.Json;
 
 namespace PLPrediction.Controllers
@@ -107,6 +108,9 @@ namespace PLPrediction.Controllers
 
                 if (adminData.GetArrayLength() == 0 || !adminData[0].GetProperty("is_admin").GetBoolean())
                     return Unauthorized("Not an admin");
+
+                if (!InputValidation.IsValidUsername(dto.Username))
+                    return BadRequest("Ugyldig brukernavn (2-20 tegn: bokstaver, tall, mellomrom, _ eller -)");
 
                 // Create user
                 var response = await _supabase.Auth.SignUp(dto.Email, dto.Password);

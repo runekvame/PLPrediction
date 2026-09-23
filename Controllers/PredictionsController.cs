@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using PLPrediction.DTOs;
 using System.Text.Json;
 using System.Text;
+using System.Linq;
 
 namespace PLPrediction.Controllers
 {
@@ -113,28 +114,75 @@ namespace PLPrediction.Controllers
             }
         }
 
+        // Krever innlogging. Egne tips vises alltid. Andres tips vises kun for
+        // kamper som allerede har startet — før det kunne hvem som helst med
+        // en gyldig innlogging se andres tips før fristen gikk ut.
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserPredictions(string userId)
+        public async Task<IActionResult> GetUserPredictions(string userId, [FromHeader] string authorization)
         {
-            _http.DefaultRequestHeaders.Clear();
-            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
-            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+            var token = authorization.Replace("Bearer ", "");
+            Supabase.Gotrue.User? requester;
+            try { requester = await _supabase.Auth.GetUser(token); }
+            catch { return Unauthorized("Token expired or invalid"); }
+            if (requester == null) return Unauthorized("Invalid token");
 
-            var res = await _http.GetAsync($"{_supabaseUrl}/rest/v1/predictions?user_id=eq.{userId}&select=*");
-            var json = await res.Content.ReadAsStringAsync();
-
-            return Ok(JsonDocument.Parse(json).RootElement);
-        }
-
-        [HttpGet("match/{matchId}")]
-        public async Task<IActionResult> GetMatchPredictions(string matchId)
-        {
             _http.DefaultRequestHeaders.Clear();
             _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
             _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
 
             var res = await _http.GetAsync(
-                $"{_supabaseUrl}/rest/v1/predictions?match_id=eq.{matchId}&select=*,users(username, avatar_url)&order=points_awarded.desc");
+                $"{_supabaseUrl}/rest/v1/predictions?user_id=eq.{userId}&select=*,matches(kickoff_time)");
+            var json = await res.Content.ReadAsStringAsync();
+            var predictions = JsonDocument.Parse(json).RootElement;
+
+            if (requester.Id == userId)
+                return Ok(predictions);
+
+            var now = DateTime.UtcNow;
+            var visible = predictions.EnumerateArray().Where(p =>
+                p.TryGetProperty("matches", out var m) &&
+                m.ValueKind == JsonValueKind.Object &&
+                m.TryGetProperty("kickoff_time", out var ko) &&
+                ko.ValueKind == JsonValueKind.String &&
+                DateTime.Parse(ko.GetString()!).ToUniversalTime() <= now
+            ).ToList();
+
+            return Ok(visible);
+        }
+
+        // Krever innlogging. Før kampen har startet vises kun din egen tipping
+        // for kampen — før det kunne hvem som helst se alles tips på forhånd.
+        [HttpGet("match/{matchId}")]
+        public async Task<IActionResult> GetMatchPredictions(string matchId, [FromHeader] string authorization)
+        {
+            var token = authorization.Replace("Bearer ", "");
+            Supabase.Gotrue.User? requester;
+            try { requester = await _supabase.Auth.GetUser(token); }
+            catch { return Unauthorized("Token expired or invalid"); }
+            if (requester == null) return Unauthorized("Invalid token");
+
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var matchRes = await _http.GetAsync($"{_supabaseUrl}/rest/v1/matches?id=eq.{matchId}&select=kickoff_time");
+            var matchJson = await matchRes.Content.ReadAsStringAsync();
+            var matchData = JsonDocument.Parse(matchJson).RootElement;
+            if (matchData.GetArrayLength() == 0) return NotFound("Match not found");
+
+            var kickoff = DateTime.Parse(matchData[0].GetProperty("kickoff_time").GetString()!).ToUniversalTime();
+            var started = DateTime.UtcNow >= kickoff;
+
+            _http.DefaultRequestHeaders.Clear();
+            _http.DefaultRequestHeaders.Add("apikey", _supabaseKey);
+            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_supabaseKey}");
+
+            var filter = started
+                ? $"match_id=eq.{matchId}"
+                : $"match_id=eq.{matchId}&user_id=eq.{requester.Id}";
+
+            var res = await _http.GetAsync(
+                $"{_supabaseUrl}/rest/v1/predictions?{filter}&select=*,users(username, avatar_url)&order=points_awarded.desc");
             var json = await res.Content.ReadAsStringAsync();
 
             return Content(json, "application/json");

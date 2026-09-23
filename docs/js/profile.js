@@ -47,7 +47,7 @@ async function loadProfile() {
 
   const avatarBtn = document.getElementById("avatar-btn");
   if (avatarUrl) {
-    avatarBtn.innerHTML = `<img src="${avatarUrl}" alt="${username}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    avatarBtn.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(username)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
   } else {
     avatarBtn.textContent = username.charAt(0).toUpperCase();
   }
@@ -333,7 +333,7 @@ async function uploadAvatar() {
 
   const username = localStorage.getItem("username") || "?";
   const avatarBtn = document.getElementById("avatar-btn");
-  avatarBtn.innerHTML = `<img src="${newUrl}" alt="${username}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+  avatarBtn.innerHTML = `<img src="${escapeHtml(newUrl)}" alt="${escapeHtml(username)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
 
   document.getElementById("crop-section").style.display = "none";
   document.getElementById("no-crop-section").style.display = "block";

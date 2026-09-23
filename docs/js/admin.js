@@ -112,7 +112,7 @@ async function scoreGameweek() {
 
   const res = await fetch(`${API_URL}/Scoring/gameweek/${gw}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(),
     body: "",
   });
   const data = await res.json();
@@ -139,7 +139,7 @@ async function scoreSeasonPredictions() {
 
   const res = await fetch(`${API_URL}/SeasonScoring/2026-27`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(),
     body: JSON.stringify(teams),
   });
   const data = await res.json();
@@ -203,17 +203,26 @@ async function loadUsers() {
       (u) => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0;border-bottom:1px solid var(--border)">
             <div>
-                <span style="font-weight:600">${u.username}</span>
+                <span style="font-weight:600">${escapeHtml(u.username)}</span>
                 ${u.is_admin ? '<span class="badge" style="background:rgba(74,222,128,0.15);color:var(--accent);margin-left:0.5rem">Admin</span>' : ""}
             </div>
             <div style="display:flex;align-items:center;gap:1rem">
                 <span style="color:var(--accent);font-weight:700">${u.total_points} p</span>
-                ${!u.is_admin ? `<button class="danger" onclick="handleDeleteUser('${u.id}', '${u.username}')" style="padding:0.3rem 0.7rem;font-size:0.8rem">Slett</button>` : ""}
+                ${!u.is_admin ? `<button class="danger" data-user-id="${escapeHtml(u.id)}" data-username="${escapeHtml(u.username)}" style="padding:0.3rem 0.7rem;font-size:0.8rem">Slett</button>` : ""}
             </div>
         </div>
     `,
     )
     .join("");
+
+  // Delegert klikk-håndtering i stedet for inline onclick med brukernavn —
+  // et brukernavn med anførselstegn kunne tidligere bryte ut av
+  // onclick-attributten og kjøre vilkårlig JS hos admin.
+  document.getElementById("users-list").onclick = (e) => {
+    const btn = e.target.closest("button[data-user-id]");
+    if (!btn) return;
+    handleDeleteUser(btn.dataset.userId, btn.dataset.username);
+  };
 }
 
 let seasonPredictionsVisible = false;
@@ -468,7 +477,7 @@ async function loadMissingPredictions() {
         <div style="margin-bottom:0.25rem;margin-top:0.75rem;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:${color}">${title} (${users.length})</div>
         ${users.map((u, i) => `
           <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.6rem;border-radius:8px;background:${i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.03)"}">
-            <span style="font-weight:600">${u.username}</span>
+            <span style="font-weight:600">${escapeHtml(u.username)}</span>
             <span style="font-size:0.75rem;color:${color};font-weight:700">${badgeFn(u)}</span>
           </div>`).join("")}`;
     }

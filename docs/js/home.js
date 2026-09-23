@@ -99,11 +99,11 @@ function podiumAvatarContent(player, rank) {
 
   if (player.avatar_url) {
     const size = rank === 1 ? "68px" : "56px";
-    return `<img src="${player.avatar_url}" alt="${player.username}"
+    return `<img src="${escapeHtml(player.avatar_url)}" alt="${escapeHtml(player.username)}"
               style="width:${size};height:${size};object-fit:cover;border-radius:50%;display:block;" />`;
   }
 
-  return (player.username || "?")[0].toUpperCase();
+  return escapeHtml((player.username || "?")[0].toUpperCase());
 }
 
 function renderPodium(players) {
@@ -136,7 +136,7 @@ function renderPodium(players) {
     return `
       <div class="podium-place ${classes[rank]}">
           <div class="podium-avatar">${podiumAvatarContent(player, rank)}</div>
-          <div class="podium-name">${player.username || "Ukjent"}</div>
+          <div class="podium-name">${escapeHtml(player.username || "Ukjent")}</div>
           <div class="podium-points">${player.total_points ?? 0} p</div>
           <div class="podium-block">${medals[rank]}</div>
       </div>`;

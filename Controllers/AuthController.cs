@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PLPrediction.DTOs;
+using PLPrediction.Helpers;
 using System.Text;
 using System.Text.Json;
 
@@ -19,6 +20,9 @@ namespace PLPrediction.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDTO dto)
         {
+            if (!InputValidation.IsValidUsername(dto.Username))
+                return BadRequest("Ugyldig brukernavn (2-20 tegn: bokstaver, tall, mellomrom, _ eller -)");
+
             var response = await _supabase.Auth.SignUp(dto.Email, dto.Password);
 
             if (response.User == null)

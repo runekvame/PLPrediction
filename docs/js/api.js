@@ -1,5 +1,17 @@
 const API_URL = "https://plprediction.onrender.com/api";
 
+// Escaper HTML-spesialtegn før tekst settes inn med innerHTML.
+// Brukes overalt brukernavn (eller annen brukerstyrt tekst) rendres,
+// slik at et brukernavn ikke kan injisere HTML/JS hos andre spillere.
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function getToken() {
   return localStorage.getItem("token");
 }

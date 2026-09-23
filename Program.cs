@@ -2,7 +2,6 @@ using DotNetEnv;
 using PLPrediction.Services;
 
 Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
-Console.WriteLine($"Looking for .env in: {Directory.GetCurrentDirectory()}");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +13,6 @@ builder.Services.AddSwaggerGen();
 var supabaseUrl = Environment.GetEnvironmentVariable("SUPABASE_URL");
 var supabaseKey = Environment.GetEnvironmentVariable("SUPABASE_KEY");
 
-Console.WriteLine($"URL: {supabaseUrl}");
-Console.WriteLine($"KEY: {supabaseKey}");
 var supabase = new Supabase.Client(supabaseUrl, supabaseKey);
 await supabase.InitializeAsync();
 
@@ -33,11 +30,21 @@ builder.Services.AddScoped<SeasonScoringService>();
 
 builder.Services.AddHostedService<AutoScoringService>();
 
+// Kun frontend-domenet (+ vanlige lokale dev-porter) får lov til å kalle API-et.
+// Var AllowAnyOrigin() + AllowAnyMethod() tidligere, som gjorde API-et fritt
+// tilgjengelig fra hvilken som helst nettside.
+var allowedOrigins = new[]
+{
+    "https://runekvame.github.io",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+};
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

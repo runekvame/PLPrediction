@@ -579,8 +579,8 @@ async function toggleMatchPredictions(
             const avatarUrl = p.users?.avatar_url || null;
 
             const avatarHtml = avatarUrl
-              ? `<img src="${avatarUrl}" alt="${name}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;flex-shrink:0;" />`
-              : `<div style="width:28px;height:28px;border-radius:50%;background:var(--bg-input);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">${name[0].toUpperCase()}</div>`;
+              ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(name)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;flex-shrink:0;" />`
+              : `<div style="width:28px;height:28px;border-radius:50%;background:var(--bg-input);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--accent);flex-shrink:0;">${escapeHtml(name[0].toUpperCase())}</div>`;
 
             const zebraBase = i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.04)";
             const exactBg = i % 2 === 0 ? "rgba(74,222,128,0.13)" : "rgba(74,222,128,0.07)";
@@ -588,7 +588,7 @@ async function toggleMatchPredictions(
             return `
           <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:0.5rem;align-items:center;padding:0.5rem 1.5rem;background:${rowBg}">
               ${avatarHtml}
-              <span style="font-size:0.9rem;font-weight:500">${name}</span>
+              <span style="font-size:0.9rem;font-weight:500">${escapeHtml(name)}</span>
               <span style="text-align:center;font-weight:600;font-size:0.9rem;background:var(--bg-input);padding:0.2rem 0.6rem;border-radius:6px">${p.predicted_home} - ${p.predicted_away}</span>
               <span style="text-align:right;font-weight:700;color:${pointColor};font-size:0.9rem">${icon} ${pts !== null ? pts + "p" : "-"}</span>
           </div>`;

@@ -42,7 +42,7 @@ function leaderboardAvatar(player) {
   const avatarUrl = player.avatar_url || player.users?.avatar_url || null;
 
   if (avatarUrl) {
-    return `<img src="${avatarUrl}" alt="${name}"
+    return `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(name)}"
               style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:block;" />`;
   }
 
@@ -52,7 +52,7 @@ function leaderboardAvatar(player) {
       display:flex;align-items:center;justify-content:center;
       font-size:0.8rem;font-weight:700;color:var(--accent);
       flex-shrink:0;">
-    ${initial}
+    ${escapeHtml(initial)}
   </div>`;
 }
 
@@ -72,7 +72,7 @@ function renderLeaderboard(players, bodyId) {
         <tr style="${p.user_id === currentUserId ? "background:rgba(74,222,128,0.05)" : ""}">
             <td class="rank">${i + 1}</td>
             <td style="width:40px;padding-right:0;">${leaderboardAvatar(p)}</td>
-            <td style="font-weight:${p.user_id === currentUserId ? "700" : "400"}">${p.username || p.users?.username || "-"}</td>
+            <td style="font-weight:${p.user_id === currentUserId ? "700" : "400"}">${escapeHtml(p.username || p.users?.username || "-")}</td>
             <td class="points" style="text-align:right">${p.total_points ?? p.points ?? 0}</td>
         </tr>
     `,
@@ -181,7 +181,7 @@ async function loadSeasonPredictionsComparison() {
         <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
           <div onclick="togglePrediction(${idx})"
             style="display:flex;justify-content:space-between;align-items:center;padding:0.8rem 1rem;cursor:pointer;background:var(--bg-input);user-select:none">
-            <span style="font-weight:600">${p.users?.username || "Ukjent"}</span>
+            <span style="font-weight:600">${escapeHtml(p.users?.username || "Ukjent")}</span>
             <span id="arrow-${idx}" style="color:var(--text-muted);font-size:0.85rem">▼</span>
           </div>
           <div id="pred-${idx}" style="display:none;padding:0.8rem 1rem">
@@ -190,7 +190,7 @@ async function loadSeasonPredictionsComparison() {
                 .map(
                   (team, i) => `
                 <span style="color:var(--text-muted);font-weight:700;font-size:0.85rem">${i + 1}.</span>
-                <span style="font-size:0.9rem">${team}</span>
+                <span style="font-size:0.9rem">${escapeHtml(team)}</span>
               `,
                 )
                 .join("")}
